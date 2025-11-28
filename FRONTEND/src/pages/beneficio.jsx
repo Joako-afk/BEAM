@@ -1,0 +1,169 @@
+// src/pages/beneficio.jsx
+import { useEffect, useState } from "react";
+import { useParams, useLocation } from "react-router-dom";
+import { generatePalette } from "../utils/generatePalette";
+import { formatTextAsList } from "../utils/textoalista.jsx";
+import InternalLayout from "../layouts/internal";
+
+export default function Beneficio() {
+  const { slug } = useParams();
+  const location = useLocation();
+
+  const [beneficio, setBeneficio] = useState(null);
+  const [colors, setColors] = useState(null);
+
+  // Colores heredados de la categoría si vienen en state
+  useEffect(() => {
+    const fromState = location.state?.colors;
+    const palette = fromState || generatePalette("#3e6a0f");
+    setColors(palette);
+
+    document.documentElement.style.setProperty("--primary", palette.primary);
+    document.documentElement.style.setProperty("--secondary", palette.secondary);
+    document.documentElement.style.setProperty("--light", palette.light);
+    document.documentElement.style.setProperty("--text", palette.text);
+  }, [location.state, slug]);
+
+  // Datos del beneficio
+  useEffect(() => {
+    fetch(`http://localhost:4000/api/beneficios/${slug}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setBeneficio(data);
+      });
+  }, [slug]);
+
+  if (!beneficio || !colors) {
+    return <p className="pt-28 text-center">Cargando...</p>;
+  }
+
+  const requisitosTexto = beneficio.requisitos || beneficio.requesitos;
+
+  return (
+    <InternalLayout title={beneficio.nombre}>
+      <div
+        className="min-h-screen pt-32 pb-20 px-4 sm:px-8"
+        style={{ backgroundColor: "var(--light)" }}
+      >
+        {/* 🟩 BLOQUE PRINCIPAL SOLO CON ICONO + DESCRIPCIÓN */}
+        <div className="max-w-5xl mx-auto bg-white p-6 sm:p-8 rounded-3xl shadow-lg flex flex-col gap-6">
+          
+          <div className="flex gap-6 items-start">
+            {/* Icono */}
+            <div
+              className="rounded-2xl p-4 flex items-center justify-center shrink-0"
+              style={{
+                backgroundColor: colors.light,
+                border: `10px solid ${colors.primary}`,
+                width: "140px",
+                height: "140px",
+              }}
+            >
+              {beneficio.icon_name ? (
+                <img
+                  src={`/icons/${beneficio.icon_name}`}
+                  alt={beneficio.nombre}
+                  className="w-24 h-24 object-contain"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="text-5xl">📌</div>
+              )}
+            </div>
+
+            {/* Descripción corta */}
+            <div className="flex-1">
+              <p className="text-base sm:text-lg leading-relaxed text-slate-900">
+                {beneficio.descripcion}
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        {/* 🟦 BLOQUES FUERA DEL BLOQUE PRINCIPAL */}
+        <div className="max-w-5xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          {/* REQUISITOS */}
+          {requisitosTexto && (
+            <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100">
+              <h2
+                className="text-xl sm:text-2xl font-bold mb-2"
+                style={{ color: colors.primary }}
+              >
+                Requisitos
+              </h2>
+              <p className="text-base sm:text-lg leading-relaxed text-slate-900 whitespace-pre-line">
+                {formatTextAsList(requisitosTexto)}
+              </p>
+            </section>
+          )}
+
+          {/* EDAD MÍNIMA */}
+          {beneficio.edad_minima != null && (
+            <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100">
+              <h2
+                className="text-xl sm:text-2xl font-bold mb-2"
+                style={{ color: colors.primary }}
+              >
+                Edad mínima
+              </h2>
+              <p className="text-base sm:text-lg text-slate-900">
+                {beneficio.edad_minima} años
+              </p>
+            </section>
+          )}
+
+          {/* COSTO */}
+          {beneficio.costo != null && (
+            <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100">
+              <h2
+                className="text-xl sm:text-2xl font-bold mb-2"
+                style={{ color: colors.primary }}
+              >
+                Costo
+              </h2>
+              <p className="text-base sm:text-lg text-slate-900">
+                {beneficio.costo === 0 ? "Gratuito" : `$${beneficio.costo}`}
+              </p>
+            </section>
+          )}
+
+        </div>
+
+        {beneficio.info_bloques?.length > 0 && (
+          <div className="max-w-5xl mx-auto mt-10 space-y-6">
+            {beneficio.info_bloques.map((b) => (
+              <section
+                key={b.id_info ?? `${b.bloque}-${b.nombre}`}
+                className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm"
+              >
+                <h2
+                  className="text-xl sm:text-2xl font-bold mb-2"
+                  style={{ color: colors.primary }}
+                >
+                  {b.nombre || `Bloque ${b.bloque}`}
+                </h2>
+
+                <p className="text-base sm:text-lg leading-relaxed text-slate-900 whitespace-pre-line">
+                  {formatTextAsList(b.contenido)}
+                </p>
+              </section>
+            ))}
+          </div>
+        )}
+
+        {/* Botón Postular */}
+        <div className="max-w-5xl mx-auto mt-8 flex flex-col sm:flex-row gap-4">
+          <button
+            className="flex-1 py-4 rounded-2xl text-[20px] font-bold text-white"
+            style={{ backgroundColor: colors.dark }}
+          >
+            Postular
+          </button>
+        </div>
+
+      </div>
+    </InternalLayout>
+  );
+}

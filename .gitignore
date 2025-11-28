@@ -1,0 +1,78 @@
+# ============================
+#   NODE / VITE / REACT
+# ============================
+node_modules/
+dist/
+build/
+.vite/
+.vite-inspect/
+vite.config.timestamp*
+
+# ============================
+#   BACKEND (EXPRESS)
+# ============================
+backend/node_modules/
+backend/dist/
+backend/.env
+
+# ============================
+#   FRONTEND (VITE)
+# ============================
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# ============================
+#   ENVIRONMENT VARIABLES
+# ============================
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+
+# ============================
+#   LOG FILES
+# ============================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ============================
+#   OS FILES
+# ============================
+.DS_Store
+Thumbs.db
+
+# ============================
+#   EDITORS
+# ============================
+.vscode/
+.idea/
+*.swp
+
+# ============================
+#   CACHE
+# ============================
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# ============================
+#   DATABASE / SQL
+# ============================
+# Tu archivo original del proyecto está bien,
+# pero la base REAL con datos sensibles no debe subirse
+Proyecto.sql
+*.sqlite
+*.db
+
+# ============================
+#   MISC
+# ============================
+*.temp
+*.tmp
