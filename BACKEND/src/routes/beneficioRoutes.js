@@ -1,12 +1,16 @@
+// src/routes/beneficioRoutes.js
 import express from "express";
-import { beneficiosPorSlugCategoria, obtenerBeneficio } from "../controllers/beneficioController.js";
+import {
+  listarBeneficiosPorCategoriaId,
+  listarBeneficiosPorSlugCategoria,
+  obtenerBeneficio,
+} from "../controllers/beneficioController.js";
 
 const router = express.Router();
 
-// Beneficios de categoría
-router.get("/categoria/:slug", beneficiosPorSlugCategoria);
-
-// Beneficio individual
+// según cómo lo tengas montado tú:
+router.get("/categoria/id/:idCategoria", listarBeneficiosPorCategoriaId);
+router.get("/categoria/:slugCategoria", listarBeneficiosPorSlugCategoria);
 router.get("/:slug", obtenerBeneficio);
 
 export default router;

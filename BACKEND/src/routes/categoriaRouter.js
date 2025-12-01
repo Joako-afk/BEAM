@@ -1,15 +1,14 @@
-// BACKEND/src/routes/categoriaRoutes.js
-import express from "express";
+import { Router } from "express";
 import {
   listarCategorias,
-  obtenerCategoria,
-  crearCategoriaController,
+  obtenerCategoriaPorIdController,
+  obtenerCategoriaPorSlugController,
 } from "../controllers/categoriaController.js";
 
-const router = express.Router();
+const router = Router();
 
 router.get("/", listarCategorias);
-router.get("/:slug", obtenerCategoria);
-router.post("/", crearCategoriaController); // ← NUEVO
+router.get("/id/:idCategoria", obtenerCategoriaPorIdController);
+router.get("/:slug", obtenerCategoriaPorSlugController);
 
 export default router;

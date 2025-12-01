@@ -1,56 +1,77 @@
-// BACKEND/src/models/categoriaModel.js
-
+// src/models/categoriaModel.js
 import { pool } from "../config/db.js";
 
+/**
+ * Obtiene todas las categorías.
+ */
 export const obtenerCategorias = async () => {
-  const result = await pool.query(`
-    SELECT 
+  const result = await pool.query(
+    `
+    SELECT
       id_categoria,
       nombre,
       descripcion,
-      slug,
       color_primary,
+      slug,
       icon_name
     FROM categoria
     ORDER BY id_categoria ASC
-  `);
+    `
+  );
   return result.rows;
 };
 
-export const obtenerCategoriaPorSlug = async (slug) => {
+/**
+ * Obtiene una categoría por su ID numérico.
+ */
+export const obtenerCategoriaPorId = async (idCategoria) => {
   const result = await pool.query(
     `
-    SELECT 
+    SELECT
       id_categoria,
       nombre,
       descripcion,
-      slug,
       color_primary,
+      slug,
       icon_name
     FROM categoria
-    WHERE slug = $1
+    WHERE id_categoria = $1
     LIMIT 1
-  `,
-    [slug]
+    `,
+    [idCategoria]
   );
+
+  if (result.rowCount === 0) {
+    return null;
+  }
 
   return result.rows[0];
 };
 
-export const crearCategoria = async ({
-  nombre,
-  descripcion,
-  color_primary,
-  slug,
-  icon_name,
-}) => {
+/**
+ * Obtiene una categoría por su SLUG.
+ * Ej: 'salud', 'organizaciones-sociales', etc.
+ */
+export const obtenerCategoriaPorSlug = async (slug) => {
   const result = await pool.query(
     `
-    INSERT INTO categoria (nombre, descripcion, color_primary, slug, icon_name)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING id_categoria, nombre, descripcion, slug, color_primary, icon_name
-  `,
-    [nombre, descripcion, color_primary, slug, icon_name]
+    SELECT
+      id_categoria,
+      nombre,
+      descripcion,
+      color_primary,
+      slug,
+      icon_name
+    FROM categoria
+    WHERE slug = $1
+    LIMIT 1
+    `,
+    [slug]
   );
+
+  if (result.rowCount === 0) {
+    return null;
+  }
+
   return result.rows[0];
 };

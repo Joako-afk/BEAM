@@ -1,79 +1,61 @@
-// BACKEND/src/controllers/categoriaController.js
-
+// src/controllers/categoriaController.js
 import {
   obtenerCategorias,
+  obtenerCategoriaPorId,
   obtenerCategoriaPorSlug,
-  crearCategoria,
 } from "../models/categoriaModel.js";
 
-import { generatePalette } from "../utils/palette.js";
-import { slugify } from "../utils/slugify.js";
-
+/**
+ * GET /api/categorias
+ * Lista todas las categorías.
+ */
 export const listarCategorias = async (req, res) => {
   try {
     const categorias = await obtenerCategorias();
-
-    const enriched = categorias.map((cat) => ({
-      ...cat,
-      palette: generatePalette(cat.color_primary),
-    }));
-
-    res.json(enriched);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error al obtener categorías" });
+    res.json(categorias);
+  } catch (error) {
+    console.error("Error al listar categorías:", error);
+    res.status(500).json({ error: "Error al obtener categorías" });
   }
 };
 
-export const obtenerCategoria = async (req, res) => {
+/**
+ * GET /api/categorias/id/:idCategoria
+ * Obtiene una categoría por su ID numérico.
+ */
+export const obtenerCategoriaPorIdController = async (req, res) => {
+  try {
+    const { idCategoria } = req.params;
+    const categoria = await obtenerCategoriaPorId(idCategoria);
+
+    if (!categoria) {
+      return res.status(404).json({ error: "Categoría no encontrada" });
+    }
+
+    res.json(categoria);
+  } catch (error) {
+    console.error("Error al obtener categoría por ID:", error);
+    res.status(500).json({ error: "Error al obtener categoría" });
+  }
+};
+
+/**
+ * GET /api/categorias/:slug
+ * Obtiene una categoría por su slug.
+ * Ej: /api/categorias/salud
+ */
+export const obtenerCategoriaPorSlugController = async (req, res) => {
   try {
     const { slug } = req.params;
     const categoria = await obtenerCategoriaPorSlug(slug);
 
     if (!categoria) {
-      return res.status(404).json({ message: "Categoría no encontrada" });
+      return res.status(404).json({ error: "Categoría no encontrada" });
     }
 
-    const palette = generatePalette(categoria.color_primary);
-
-    res.json({
-      ...categoria,
-      palette,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error del servidor" });
-  }
-};
-
-export const crearCategoriaController = async (req, res) => {
-  try {
-    const { nombre, descripcion, color_primary, icon_name } = req.body;
-
-    if (!nombre || !color_primary || !icon_name) {
-      return res.status(400).json({
-        message: "Nombre, color_primary e icon_name son obligatorios",
-      });
-    }
-
-    const slug = slugify(nombre);
-
-    const nueva = await crearCategoria({
-      nombre,
-      descripcion: descripcion || "",
-      color_primary,
-      slug,
-      icon_name,
-    });
-
-    const palette = generatePalette(nueva.color_primary);
-
-    res.status(201).json({
-      ...nueva,
-      palette,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error al crear categoría" });
+    res.json(categoria);
+  } catch (error) {
+    console.error("Error al obtener categoría por slug:", error);
+    res.status(500).json({ error: "Error al obtener categoría" });
   }
 };
