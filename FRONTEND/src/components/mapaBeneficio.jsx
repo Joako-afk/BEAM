@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 
 export default function MapaBeneficio({ slug }) {
-  const [organismoPrincipal, setOrganismoPrincipal] = useState(null);
-  const [center, setCenter] = useState([-41.6169, -73.5956]); // respaldo
+  const [organismos, setOrganismos] = useState([]);
+  const [center, setCenter] = useState([-41.6169, -73.5956]); // respaldo (Puerto Varas aprox)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,22 +20,25 @@ export default function MapaBeneficio({ slug }) {
       )}/organismos`
     )
       .then((res) => {
-        if (!res.ok) throw new Error("No se pudieron cargar las sucursales");
+        if (!res.ok) {
+          throw new Error("No se pudieron cargar las sucursales");
+        }
         return res.json();
       })
       .then((data) => {
-        if (data.length === 0) {
-          setOrganismoPrincipal(null);
-          return;
-        }
+        console.log("organismos desde backend:", data);
+        if (Array.isArray(data) && data.length > 0) {
+          setOrganismos(data);
 
-        // 👇 Solo tomamos el primero
-        const principal = data[0];
-        setOrganismoPrincipal(principal);
-        setCenter([principal.lat, principal.lng]);
+          // 👇 OJO: usamos [lng, lat] como [lat, lng] porque vienen invertidos
+          const o0 = data[0];
+          setCenter([o0.lng, o0.lat]);
+        } else {
+          setOrganismos([]);
+        }
       })
       .catch((err) => {
-        console.error(err);
+        console.error("Error cargando organismos:", err);
         setError(err.message);
       })
       .finally(() => setLoading(false));
@@ -51,13 +54,15 @@ export default function MapaBeneficio({ slug }) {
     return <p className="text-sm text-red-500">{error}</p>;
   }
 
-  if (!organismoPrincipal) {
+  if (!Array.isArray(organismos) || organismos.length === 0) {
     return (
       <p className="text-sm text-slate-500">
         Este beneficio actualmente no tiene una ubicación asociada.
       </p>
     );
   }
+
+  const o = organismos[0]; // solo 1 punto
 
   return (
     <div className="w-full h-80 rounded-2xl overflow-hidden border border-slate-200">
@@ -72,15 +77,14 @@ export default function MapaBeneficio({ slug }) {
           attribution='&copy; OpenStreetMap contributors'
         />
 
-        <Marker position={[organismoPrincipal.lat, organismoPrincipal.lng]}>
+        {/* 👇 Igual que center: [lng, lat] como [lat, lng] */}
+        <Marker position={[o.lng, o.lat]}>
           <Popup>
-            <strong>{organismoPrincipal.nombre_sucursal}</strong>
+            <strong>{o.nombre_sucursal}</strong>
             <br />
-            {organismoPrincipal.direccion}
+            {o.direccion}
             <br />
-            {organismoPrincipal.telefono && (
-              <span>Tel: {organismoPrincipal.telefono}</span>
-            )}
+            {o.telefono && <span>Tel: {o.telefono}</span>}
           </Popup>
         </Marker>
       </MapContainer>

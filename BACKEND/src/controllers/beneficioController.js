@@ -26,8 +26,7 @@ export const listarBeneficiosPorSlugCategoria = async (req, res) => {
       return res.status(404).json({ error: "Categoría no encontrada" });
     }
 
-    // { categoria, beneficios }
-    res.json(data);
+    res.json(data); // { categoria, beneficios }
   } catch (error) {
     console.error("Error al listar beneficios por slugCategoria:", error);
     res.status(500).json({ error: "Error al obtener beneficios" });
@@ -51,8 +50,8 @@ export const obtenerBeneficio = async (req, res) => {
 };
 
 /**
- * Lista organismos (con lat/lng) para un beneficio.
  * GET /api/beneficios/:slug/organismos
+ * Organismos (sucursales) para el mapa.
  */
 export const listarOrganismosDeBeneficio = async (req, res) => {
   try {
@@ -60,7 +59,7 @@ export const listarOrganismosDeBeneficio = async (req, res) => {
 
     const organismos = await obtenerOrganismosPorSlugBeneficio(slug);
 
-    if (organismos.length === 0) {
+    if (!organismos || organismos.length === 0) {
       return res
         .status(404)
         .json({ error: "Este beneficio no tiene organismos asociados" });

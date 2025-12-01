@@ -48,9 +48,7 @@ export const obtenerBeneficiosPorSlugCategoria = async (slugCategoria) => {
     [slugCategoria]
   );
 
-  if (catResult.rowCount === 0) {
-    return null;
-  }
+  if (catResult.rowCount === 0) return null;
 
   const categoria = catResult.rows[0];
 
@@ -76,10 +74,7 @@ export const obtenerBeneficiosPorSlugCategoria = async (slugCategoria) => {
 
   const beneficios = benResult.rows;
 
-  return {
-    categoria,
-    beneficios,
-  };
+  return { categoria, beneficios };
 };
 
 /**
@@ -107,9 +102,7 @@ export const obtenerBeneficioPorSlug = async (slug) => {
     [slug]
   );
 
-  if (result.rowCount === 0) {
-    return null;
-  }
+  if (result.rowCount === 0) return null;
 
   const beneficio = result.rows[0];
 
