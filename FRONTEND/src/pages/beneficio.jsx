@@ -13,6 +13,8 @@ export default function Beneficio() {
 
   const [beneficio, setBeneficio] = useState(null);
   const [colors, setColors] = useState(null);
+  const [mapExpanded, setMapExpanded] = useState(false);
+
 
   // Colores heredados de la categoría si vienen en state
   useEffect(() => {
@@ -133,7 +135,7 @@ export default function Beneficio() {
 
         </div>
 
-        {beneficio.info_bloques?.length > 0 && (
+                {beneficio.info_bloques?.length > 0 && (
           <div className="max-w-5xl mx-auto mt-10 space-y-6">
             {beneficio.info_bloques.map((b) => (
               <section
@@ -155,29 +157,72 @@ export default function Beneficio() {
           </div>
         )}
 
+        {/* 🗺️ Bloque del mapa + acciones */}
         {beneficio && (
-          <div className="max-w-5xl mx-auto mt-10 space-y-3">
-            <h2
-              className="text-xl sm:text-2xl font-bold"
-              style={{ color: colors.primary }}
-            >
-              ¿Dónde puedo acceder a este beneficio?
-            </h2>
+          <section className="max-w-5xl mx-auto mt-10 bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <h2
+                className="text-xl sm:text-2xl font-bold"
+                style={{ color: colors.primary }}
+              >
+                ¿Dónde puedo acceder a este beneficio?
+              </h2>
 
-            <MapaBeneficio slug={beneficio.slug} />
-          </div>
+              <button
+                type="button"
+                onClick={() => setMapExpanded((v) => !v)}
+                className="text-xs sm:text-sm px-3 py-1 rounded-full border border-slate-300 hover:bg-slate-100"
+              >
+                {mapExpanded ? "Ver mapa pequeño" : "Ver mapa grande"}
+              </button>
+            </div>
+
+            <div
+              className={
+                mapExpanded
+                  ? "space-y-4"
+                  : "grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6 items-stretch"
+              }
+            >
+              {/* Contenedor del mapa */}
+              <div className={mapExpanded ? "h-80 md:h-96" : "h-56"}>
+                <MapaBeneficio slug={beneficio.slug} zoom={mapExpanded ? 16 : 15} />
+              </div>
+
+              {/* Acciones al lado del mapa (cuando está pequeño) */}
+              <div className={mapExpanded ? "space-y-3" : "flex flex-col justify-between gap-4"}>
+                <p className="text-sm sm:text-base text-slate-700">
+                  Aquí puedes ver el lugar donde se entrega este beneficio. Acércate a la
+                  sucursal o centro de salud para más información.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    className="flex-1 py-3 rounded-2xl text-[16px] font-bold text-white"
+                    style={{ backgroundColor: colors.dark }}
+                  >
+                    Postular
+                  </button>
+
+                  <button
+                    className="flex-1 py-3 rounded-2xl text-[16px] font-semibold border border-slate-300 text-slate-800 hover:bg-slate-50"
+                    type="button"
+                  >
+                    Saber más
+                  </button>
+
+                  <button
+                    className="flex-1 py-3 rounded-2xl text-[16px] font-semibold border border-slate-300 text-slate-800 hover:bg-slate-50"
+                    type="button"
+                  >
+                    Descargar ficha
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
         )}
 
-
-        {/* Botón Postular */}
-        <div className="max-w-5xl mx-auto mt-8 flex flex-col sm:flex-row gap-4">
-          <button
-            className="flex-1 py-4 rounded-2xl text-[20px] font-bold text-white"
-            style={{ backgroundColor: colors.dark }}
-          >
-            Postular
-          </button>
-        </div>
 
       </div>
     </InternalLayout>
