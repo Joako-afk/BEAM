@@ -14,7 +14,7 @@ export default function Categoria() {
   const [beneficios, setBeneficios] = useState([]);
 
   useEffect(() => {
-    // 🔥 ESTA ES LA RUTA CORRECTA PARA CATEGORÍA
+    // ESTA ES LA RUTA CORRECTA PARA CATEGORÍA
     fetch(`http://localhost:4000/api/beneficios/categoria/${slug}`)
       .then((res) => res.json())
       .then((data) => {
@@ -31,7 +31,7 @@ export default function Categoria() {
           colors: palette,
         });
 
-        // 👇 AQUÍ PASAMOS LA PALETA EN LA NAVEGACIÓN AL BENEFICIO
+        // AQUÍ PASAMOS LA PALETA EN LA NAVEGACIÓN AL BENEFICIO
         const enhanced = data.beneficios.map((b) => ({
           ...b,
           colors: palette,

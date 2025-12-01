@@ -49,7 +49,7 @@ export default function Beneficio() {
         className="min-h-screen pt-32 pb-20 px-4 sm:px-8"
         style={{ backgroundColor: "var(--light)" }}
       >
-        {/* 🟩 BLOQUE PRINCIPAL SOLO CON ICONO + DESCRIPCIÓN */}
+        {/* BLOQUE PRINCIPAL SOLO CON ICONO + DESCRIPCIÓN */}
         <div className="max-w-5xl mx-auto bg-white p-6 sm:p-8 rounded-3xl shadow-lg flex flex-col gap-6">
           
           <div className="flex gap-6 items-start">
@@ -65,7 +65,7 @@ export default function Beneficio() {
             >
               {beneficio.icon_name ? (
                 <img
-                  src={`/icons/${beneficio.icon_name}`}
+                  src={`/icons/beneficios/${beneficio.icon_name}`}
                   alt={beneficio.nombre}
                   className="w-24 h-24 object-contain"
                   loading="lazy"

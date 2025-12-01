@@ -13,6 +13,7 @@ function CategoriaCardComponent({ data }) {
       color={data.colors.primary}
       lightColor={data.colors.light}
       barColor={data.colors.secondary}
+      iconFolder="categorias"  // 👈 usa /icons/categorias/
       onClick={() => navigate(`/categoria/${data.slug}`)}
     />
   );
@@ -29,13 +30,14 @@ function BeneficioCardComponent({ data }) {
       color={data.colors.primary}
       lightColor={data.colors.light}
       barColor={data.colors.secondary}
-      // 👇 Usa onClick que viene desde Categoria.jsx si existe
+      iconFolder="beneficios"  // 👈 usa /icons/beneficios/
+      // Usa onClick que viene desde Categoria.jsx si existe
       onClick={data.onClick || (() => navigate(`/beneficio/${data.slug}`))}
     />
   );
 }
 
-// FUNCIONES (sin if) que solo devuelven el componente
+// FUNCIONES que devuelven el componente (como ya lo usas en inicio.jsx y categoria.jsx)
 export function cardCategoria(data) {
   return <CategoriaCardComponent data={data} />;
 }

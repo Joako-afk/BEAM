@@ -14,7 +14,6 @@ export default function MapaBeneficio({ slug, zoom = 16 }) {
     setLoading(true);
     setError(null);
 
-    // 👇 IMPORTANTE: encodeURIComponent por el slug con paréntesis
     fetch(
       `http://localhost:4000/api/beneficios/${encodeURIComponent(
         slug
@@ -68,13 +67,13 @@ export default function MapaBeneficio({ slug, zoom = 16 }) {
     );
   }
 
-  const o = organismos[0]; // solo 1 punto “del beneficio”
+  const o = organismos[0]; 
 
   return (
     <div className="w-full h-full rounded-2xl overflow-hidden border border-slate-200">
       <MapContainer
         center={[o.lng, o.lat]} // mismo truco: [lat, lng] usando lng/lat del JSON
-        zoom={zoom}             // 👈 zoom más cerca
+        zoom={zoom}             
         scrollWheelZoom={false}
         style={{ width: "100%", height: "100%" }}
         className="z-0"

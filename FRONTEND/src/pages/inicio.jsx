@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import InfoPanel from "../components/infopanel";
 import SearchBar from "../components/busqueda";
 import { generatePalette } from "../utils/generatePalette";
-import { cardCategoria } from "../components/card";
+import { cardCategoria, cardBeneficio } from "../components/card";
+
 
 export default function Inicio() {
   const [categorias, setCategorias] = useState([]);

@@ -1,3 +1,5 @@
+// src/components/carddesign.jsx
+
 export default function CardDesign({
   title,
   iconName,
@@ -5,6 +7,7 @@ export default function CardDesign({
   lightColor,
   barColor,
   onClick,
+  iconFolder = "beneficios", // 👈 carpeta por defecto
 }) {
   return (
     <div
@@ -14,7 +17,7 @@ export default function CardDesign({
         rounded-3xl 
         overflow-hidden 
         cursor-pointer 
-        shadow-lg
+        shadow-lg 
         transition-transform 
         hover:scale-[1.03]
         w-40 sm:w-52 md:w-56
@@ -37,7 +40,7 @@ export default function CardDesign({
         }}
       >
         <img
-          src={`/icons/${iconName}`}
+          src={`/icons/${iconFolder}/${iconName}`}  
           alt={title}
           className="w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 object-contain"
           loading="lazy"
