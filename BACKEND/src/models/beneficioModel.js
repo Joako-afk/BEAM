@@ -28,23 +28,18 @@ export const obtenerBeneficiosPorCategoriaId = async (idCategoria) => {
 
 /**
  * Lista beneficios por SLUG de categoría y devuelve:
- * {
- *   categoria: {...},
- *   beneficios: [...]
- * }
- *
- * Esta es la forma que tu frontend está esperando.
+ * { categoria: {...}, beneficios: [...] }
  */
 export const obtenerBeneficiosPorSlugCategoria = async (slugCategoria) => {
-  // 1) Obtener la categoría por su slug
+  // 1) Categoría
   const catResult = await pool.query(
     `
     SELECT 
       id_categoria,
       nombre,
       descripcion,
-      slug,
       color_primary,
+      slug,
       icon_name
     FROM categoria
     WHERE slug = $1
@@ -54,12 +49,12 @@ export const obtenerBeneficiosPorSlugCategoria = async (slugCategoria) => {
   );
 
   if (catResult.rowCount === 0) {
-    return null; // categoría no encontrada
+    return null;
   }
 
   const categoria = catResult.rows[0];
 
-  // 2) Obtener los beneficios asociados a esa categoría
+  // 2) Beneficios de esa categoría
   const benResult = await pool.query(
     `
     SELECT
@@ -81,7 +76,6 @@ export const obtenerBeneficiosPorSlugCategoria = async (slugCategoria) => {
 
   const beneficios = benResult.rows;
 
-  // 3) Devolver en el formato que el FRONT espera
   return {
     categoria,
     beneficios,
@@ -93,7 +87,7 @@ export const obtenerBeneficiosPorSlugCategoria = async (slugCategoria) => {
  * /api/beneficios/:slug
  */
 export const obtenerBeneficioPorSlug = async (slug) => {
-  // 1) Obtener el beneficio principal
+  // 1) Beneficio principal
   const result = await pool.query(
     `
     SELECT
@@ -119,7 +113,7 @@ export const obtenerBeneficioPorSlug = async (slug) => {
 
   const beneficio = result.rows[0];
 
-  // 2) Obtener los bloques de información asociados
+  // 2) Bloques de información
   const infoResult = await pool.query(
     `
     SELECT
@@ -138,4 +132,33 @@ export const obtenerBeneficioPorSlug = async (slug) => {
 
   beneficio.info_bloques = infoResult.rows;
   return beneficio;
+};
+
+/**
+ * Organismos (sucursales) donde se puede usar un beneficio,
+ * buscado por el SLUG del beneficio.
+ */
+export const obtenerOrganismosPorSlugBeneficio = async (slugBeneficio) => {
+  const result = await pool.query(
+    `
+    SELECT
+      o.id_organismo,
+      o.nombre_sucursal,
+      o.tipo,
+      o.direccion,
+      o.telefono,
+      ST_X(o.coordenadas) AS lng,
+      ST_Y(o.coordenadas) AS lat
+    FROM beneficio b
+    JOIN beneficio_organismo bo
+      ON bo.id_beneficio = b.id_beneficio
+    JOIN organismo o
+      ON o.id_organismo = bo.id_organismo
+    WHERE b.slug = $1
+    ORDER BY o.nombre_sucursal ASC
+    `,
+    [slugBeneficio]
+  );
+
+  return result.rows; // array de sucursales con lat/lng
 };

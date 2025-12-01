@@ -9,3 +9,7 @@
   --text: #ffffff;
   --body-text: #0f172a;
 }
+/* Asegurar que el mapa NO tape la navbar ni el footer */
+.leaflet-container {
+  z-index: 0 !important;
+}

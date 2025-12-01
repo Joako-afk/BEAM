@@ -4,6 +4,8 @@ import { useParams, useLocation } from "react-router-dom";
 import { generatePalette } from "../utils/generatePalette";
 import { formatTextAsList } from "../utils/textoalista.jsx";
 import InternalLayout from "../layouts/internal";
+import MapaBeneficio from "../components/mapaBeneficio.jsx";
+
 
 export default function Beneficio() {
   const { slug } = useParams();
@@ -81,7 +83,6 @@ export default function Beneficio() {
 
         </div>
 
-        {/* 🟦 BLOQUES FUERA DEL BLOQUE PRINCIPAL */}
         <div className="max-w-5xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
 
           {/* REQUISITOS */}
@@ -93,9 +94,10 @@ export default function Beneficio() {
               >
                 Requisitos
               </h2>
-              <p className="text-base sm:text-lg leading-relaxed text-slate-900 whitespace-pre-line">
+              <div className="text-base sm:text-lg leading-relaxed text-slate-900 whitespace-pre-line">
                 {formatTextAsList(requisitosTexto)}
-              </p>
+              </div>
+
             </section>
           )}
 
@@ -145,13 +147,27 @@ export default function Beneficio() {
                   {b.nombre || `Bloque ${b.bloque}`}
                 </h2>
 
-                <p className="text-base sm:text-lg leading-relaxed text-slate-900 whitespace-pre-line">
+                <div className="text-base sm:text-lg leading-relaxed text-slate-900 whitespace-pre-line">
                   {formatTextAsList(b.contenido)}
-                </p>
+                </div>
               </section>
             ))}
           </div>
         )}
+
+        {beneficio && (
+          <div className="max-w-5xl mx-auto mt-10 space-y-3">
+            <h2
+              className="text-xl sm:text-2xl font-bold"
+              style={{ color: colors.primary }}
+            >
+              ¿Dónde puedo acceder a este beneficio?
+            </h2>
+
+            <MapaBeneficio slug={beneficio.slug} />
+          </div>
+        )}
+
 
         {/* Botón Postular */}
         <div className="max-w-5xl mx-auto mt-8 flex flex-col sm:flex-row gap-4">

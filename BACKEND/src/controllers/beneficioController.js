@@ -3,6 +3,7 @@ import {
   obtenerBeneficiosPorCategoriaId,
   obtenerBeneficiosPorSlugCategoria,
   obtenerBeneficioPorSlug,
+  obtenerOrganismosPorSlugBeneficio,
 } from "../models/beneficioModel.js";
 
 export const listarBeneficiosPorCategoriaId = async (req, res) => {
@@ -25,7 +26,7 @@ export const listarBeneficiosPorSlugCategoria = async (req, res) => {
       return res.status(404).json({ error: "Categoría no encontrada" });
     }
 
-    // data = { categoria, beneficios }
+    // { categoria, beneficios }
     res.json(data);
   } catch (error) {
     console.error("Error al listar beneficios por slugCategoria:", error);
@@ -46,5 +47,30 @@ export const obtenerBeneficio = async (req, res) => {
   } catch (error) {
     console.error("Error al obtener beneficio:", error);
     res.status(500).json({ error: "Error al obtener beneficio" });
+  }
+};
+
+/**
+ * Lista organismos (con lat/lng) para un beneficio.
+ * GET /api/beneficios/:slug/organismos
+ */
+export const listarOrganismosDeBeneficio = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const organismos = await obtenerOrganismosPorSlugBeneficio(slug);
+
+    if (organismos.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "Este beneficio no tiene organismos asociados" });
+    }
+
+    res.json(organismos);
+  } catch (error) {
+    console.error("Error al listar organismos del beneficio:", error);
+    res
+      .status(500)
+      .json({ error: "Error al obtener los organismos del beneficio" });
   }
 };
