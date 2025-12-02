@@ -9,13 +9,13 @@ import InternalLayout from "../layouts/internal";
 export default function Categoria() {
   const { slug } = useParams();
   const navigate = useNavigate();
-
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
   const [categoria, setCategoria] = useState(null);
   const [beneficios, setBeneficios] = useState([]);
 
   useEffect(() => {
     // ESTA ES LA RUTA CORRECTA PARA CATEGORÍA
-    fetch(`http://localhost:4000/api/beneficios/categoria/${slug}`)
+      fetch(`${API_URL}/api/beneficios/categoria/${slug}`)
       .then((res) => res.json())
       .then((data) => {
         const palette = generatePalette(data.categoria.color_primary);

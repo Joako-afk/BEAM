@@ -26,8 +26,8 @@ services:
     environment:
       - DB_HOST=db  # Importante: Docker usa este nombre para conectarse
       - DB_USER=postgres
-      - DB_PASS=Mar1999uwu+1
-      - DB_NAME=proyecto
+      - DB_PASSWORD=Mar1999uwu+1
+      - DB_NAME=Proyecto
       - DB_PORT=5432
       - PORT=5000
       - JWT_SECRET=984f0c83fbaa0cc5b8c5574c926e6906275556e4a03576cd139b31566f9ff6c1ad63265e61f925702cfb55993ffda0f6

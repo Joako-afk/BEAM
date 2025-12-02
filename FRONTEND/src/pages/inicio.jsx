@@ -8,6 +8,7 @@ import { cardCategoria} from "../components/card";
 export default function Inicio() {
   const [categorias, setCategorias] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
   useEffect(() => {
     // Restaurar colores base al volver al inicio
@@ -17,7 +18,7 @@ export default function Inicio() {
     document.documentElement.style.setProperty("--light", "#f4f8e4");
     document.documentElement.style.setProperty("--text", "#ffffff");
 
-    fetch("http://localhost:5000/api/categorias")
+    fetch(`${API_URL}/api/categorias`)
       .then((res) => res.json())
       .then((data) => {
         const enhanced = data.map((cat) => ({

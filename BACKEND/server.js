@@ -13,10 +13,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const PORT = 4000;
+
 app.use("/api/categorias", categoriaRoutes);
 app.use("/api/usuarios", usuarioRoutes); 
 app.use("/api/beneficios", beneficioRoutes);
 
-app.listen(process.env.PORT || 4000, () =>
-  console.log("🔥 Servidor en puerto", process.env.PORT || 4000)
-);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
