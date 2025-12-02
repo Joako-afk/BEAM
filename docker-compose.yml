@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # ----------------BASE DE DATOS----------------
+  db:
+    image: postgres:15-alpine
+    container_name: proyecto_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "Mar1999uwu+1" # Tu contraseña actual
+      POSTGRES_DB: proyecto
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql # Carga tu script automáticamente
+
+  # ----------------BACKEND----------------
+  backend:
+    build: ./backend
+    container_name: proyecto_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - DB_HOST=db  # Importante: Docker usa este nombre para conectarse
+      - DB_USER=postgres
+      - DB_PASS=Mar1999uwu+1
+      - DB_NAME=proyecto
+      - DB_PORT=5432
+      - PORT=5000
+      - JWT_SECRET=984f0c83fbaa0cc5b8c5574c926e6906275556e4a03576cd139b31566f9ff6c1ad63265e61f925702cfb55993ffda0f6
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app          # Espejo para editar código en vivo
+      - /app/node_modules       # Ignorar node_modules locales
+
+  # ----------------FRONTEND----------------
+  frontend:
+    build: ./frontend
+    container_name: proyecto_frontend
+    restart: always
+    ports:
+      - "80:5173" # Mapeamos el puerto 80 al 5173 de Vite
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app         # Espejo para editar código en vivo
+      - /app/node_modules       # Ignorar node_modules locales
+
+volumes:
+  pgdata:
