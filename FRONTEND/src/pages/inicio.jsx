@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import InfoPanel from "../components/infopanel";
 import SearchBar from "../components/busqueda";
 import { generatePalette } from "../utils/generatePalette";
-import { cardCategoria, cardBeneficio } from "../components/card";
-
+import { cardCategoria } from "../components/card";
 
 export default function Inicio() {
   const [categorias, setCategorias] = useState([]);
@@ -34,33 +33,26 @@ export default function Inicio() {
 
   return (
     <div className="w-full flex flex-col items-center pt-28">
-      {/* Panel superior */}
       <div className="-mt-3 w-full flex justify-center">
         <InfoPanel
           text="Aquí puedes encontrar las categorías disponibles de beneficios."
-          colors={{
-            primary: "#3e6a0f",
-            secondary: "#96c43f",
-            tertiary: "#c5f100",
-            text: "#000"
-          }}
+          primary="var(--primary)"
+          secondary="var(--secondary)"
+          tertiary="var(--tertiary)"
+          textColor="var(--text)"
+          defaultOpen
         />
-
       </div>
 
-      {/* Barra de búsqueda */}
-      <SearchBar
-        value={busqueda}
-        onChange={(e) => setBusqueda(e.target.value)}
-      />
+      <SearchBar value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
 
-      {/* Tarjetas de categorías */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-20 px-4 mt-8">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] items-stretch gap-6 mb-20 px-4 mt-8 w-full max-w-6xl">
         {filtradas.map((cat) => (
-          <div key={cat.id_categoria}>{cardCategoria(cat)}</div>
+          <div key={cat.id_categoria} className="h-full">
+            {cardCategoria(cat)}
+          </div>
         ))}
       </div>
     </div>
   );
 }
-

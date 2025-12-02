@@ -7,69 +7,56 @@ export default function CardDesign({
   lightColor,
   barColor,
   onClick,
-  iconFolder = "beneficios", // 👈 carpeta por defecto
+  iconFolder = "beneficios",
 }) {
   return (
     <div
       onClick={onClick}
       className="
-        block 
-        rounded-3xl 
-        overflow-hidden 
-        cursor-pointer 
-        shadow-lg 
-        transition-transform 
-        hover:scale-[1.03]
-        w-40 sm:w-52 md:w-56
+        block rounded-3xl overflow-hidden cursor-pointer shadow-lg
+        transition-transform hover:scale-[1.03]
+        w-full max-w-[15rem] h-full flex flex-col
+        justify-self-start
       "
       style={{ backgroundColor: color }}
     >
-      {/* PARTE SUPERIOR */}
+      {/* Parte superior */}
       <div
         className="
-          flex 
-          items-center 
-          justify-center 
-          m-4 
-          rounded-2xl
-          p-6
+          flex items-center justify-center
+          m-4 rounded-2xl
+          p-4 sm:p-5
+          aspect-square
         "
         style={{
           backgroundColor: lightColor,
-          border: `12px solid ${color}`,
+          border: `10px solid ${color}`,
         }}
       >
         <img
-          src={`/icons/${iconFolder}/${iconName}`}  
+          src={`/icons/${iconFolder}/${iconName}`}
           alt={title}
-          className="w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 object-contain"
+          className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain"
           loading="lazy"
         />
       </div>
 
-      {/* FRANJA INFERIOR */}
+      {/* Franja inferior */}
       <div
         className="
-          flex 
-          items-center 
-          justify-center 
-          rounded-b-3xl
-          px-4 py-4
+          flex items-center justify-center
+          rounded-b-3xl px-4 py-3 sm:py-4
+          mt-auto h-20
         "
         style={{
           backgroundColor: barColor || color,
-          minHeight: "5rem",
         }}
       >
         <h2
           className="
-            font-semibold 
-            text-white 
-            text-center 
-            leading-normal
-            whitespace-normal
-            break-words
-            text-[18px] sm:text-[20px] md:text-[22px]
+            font-semibold text-white text-center leading-tight
+            whitespace-normal break-words
+            text-[18px] sm:text-[19px] md:text-[21px]
           "
         >
           {title}

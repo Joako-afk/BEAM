@@ -1,4 +1,4 @@
-// src/pages/categoria.jsx
+﻿// src/pages/categoria.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import InfoPanel from "../components/infopanel";
@@ -31,16 +31,12 @@ export default function Categoria() {
           colors: palette,
         });
 
-        // AQUÍ PASAMOS LA PALETA EN LA NAVEGACIÓN AL BENEFICIO
         const enhanced = data.beneficios.map((b) => ({
           ...b,
           colors: palette,
           onClick: () =>
             navigate(`/beneficio/${b.slug}`, {
-              state: {
-                colors: palette,
-                categoriaNombre: data.categoria.nombre,
-              },
+              state: { colors: palette },
             }),
         }));
 
@@ -56,16 +52,11 @@ export default function Categoria() {
         className="w-full flex flex-col items-center pt-20"
         style={{ backgroundColor: "var(--light)", minHeight: "100vh" }}
       >
-        {/* InfoPanel */}
         <div className="-mt-19 w-full flex justify-center">
-          <InfoPanel
-            text={categoria.descripcion}
-            colors={categoria.colors}
-          />
+          <InfoPanel text={categoria.descripcion} />
         </div>
 
-        {/* Tarjetas */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-20 px-4">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] items-stretch justify-items-start gap-6 mb-20 px-4 w-full max-w-6xl">
           {beneficios.length === 0 && (
             <p className="col-span-full text-gray-600">
               No hay beneficios disponibles.
@@ -73,7 +64,7 @@ export default function Categoria() {
           )}
 
           {beneficios.map((benef) => (
-            <div key={benef.id_beneficio}>{cardBeneficio(benef)}</div>
+            <div key={benef.id_beneficio} className="h-full">{cardBeneficio(benef)}</div>
           ))}
         </div>
       </div>

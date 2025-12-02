@@ -2,19 +2,18 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-export default function InfoPanel({ text, colors }) {
-  const [open, setOpen] = useState(false);
-
-  const {
-    primary,      // color fuerte
-    secondary,    // color medio (panel)
-    tertiary,     // color suave (botón)
-    text: textColor
-  } = colors || {};
+export default function InfoPanel({
+  text = "Aquí se encuentran los beneficios para adultos mayores separados por diferentes bloques.",
+  label = "Información",
+  primary = "var(--primary,#3e6a0f)",
+  secondary = "var(--secondary,#2f540c)",
+  textColor = "var(--text,#ffffff)",
+  defaultOpen = false,
+}) {
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <div className="relative flex flex-col items-center mb-8">
-
       {/* Panel desplegado */}
       {open && (
         <div
@@ -23,13 +22,11 @@ export default function InfoPanel({ text, colors }) {
             rounded-b-2xl shadow-md max-w-4xl w-full animate-fadeIn
           "
           style={{
-            backgroundColor: secondary,   // ← color medio
-            color: textColor              // ← automático según primary
+            backgroundColor: primary,
+            color: textColor,
           }}
         >
-          <p className="text-sm sm:text-base font-medium">
-            {text}
-          </p>
+          <p className="text-sm sm:text-base font-medium">{text}</p>
         </div>
       )}
 
@@ -40,14 +37,13 @@ export default function InfoPanel({ text, colors }) {
           flex flex-col items-center justify-center
           font-semibold px-6 py-2
           sm:px-8 sm:py-3 rounded-b-2xl shadow-md
-          transition-all -mt-2
-          hover:opacity-85
+          transition-all -mt-2 hover:opacity-90
           ${open ? "rounded-t-none" : "rounded-2xl"}
         `}
         style={{
-          backgroundColor: tertiary,         // ← color suave
-          border: `2px solid ${primary}`,    // ← borde fuerte mejora contraste
-          color: "#000"
+          backgroundColor: secondary,
+          color: textColor,
+          border: `1px solid ${primary}`,
         }}
       >
         {open ? (
@@ -55,12 +51,9 @@ export default function InfoPanel({ text, colors }) {
         ) : (
           <ChevronDown size={22} strokeWidth={2.5} />
         )}
-
-        <span className="text-sm sm:text-base mt-[-2px]">
-          Información
-        </span>
+        <span className="text-sm sm:text-base mt-[-2px]">{label}</span>
       </button>
-
     </div>
   );
 }
+

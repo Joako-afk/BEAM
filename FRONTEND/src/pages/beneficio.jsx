@@ -24,6 +24,7 @@ export default function Beneficio() {
 
     document.documentElement.style.setProperty("--primary", palette.primary);
     document.documentElement.style.setProperty("--secondary", palette.secondary);
+    document.documentElement.style.setProperty("--tertiary", palette.tertiary);
     document.documentElement.style.setProperty("--light", palette.light);
     document.documentElement.style.setProperty("--text", palette.text);
   }, [location.state, slug]);
@@ -75,9 +76,9 @@ export default function Beneficio() {
               )}
             </div>
 
-            {/* Descripción corta */}
+            {/* Descripción */}
             <div className="flex-1">
-              <p className="text-base sm:text-lg leading-relaxed text-slate-900">
+              <p className="text-lg sm:text-xl leading-relaxed text-slate-900">
                 {beneficio.descripcion}
               </p>
             </div>
@@ -91,12 +92,12 @@ export default function Beneficio() {
           {requisitosTexto && (
             <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100">
               <h2
-                className="text-xl sm:text-2xl font-bold mb-2"
+                className="text-xl sm:text-2xl font-bold mb-2 uppercase"
                 style={{ color: colors.primary }}
               >
                 Requisitos
               </h2>
-              <div className="text-base sm:text-lg leading-relaxed text-slate-900 whitespace-pre-line">
+              <div className="text-lg sm:text-xl leading-relaxed text-slate-900 whitespace-pre-line">
                 {formatTextAsList(requisitosTexto)}
               </div>
 
@@ -107,12 +108,12 @@ export default function Beneficio() {
           {beneficio.edad_minima != null && (
             <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100">
               <h2
-                className="text-xl sm:text-2xl font-bold mb-2"
+                className="text-xl sm:text-2xl font-bold mb-2 uppercase"
                 style={{ color: colors.primary }}
               >
                 Edad mínima
               </h2>
-              <p className="text-base sm:text-lg text-slate-900">
+              <p className="text-lg sm:text-xl text-slate-900">
                 {beneficio.edad_minima} años
               </p>
             </section>
@@ -122,12 +123,12 @@ export default function Beneficio() {
           {beneficio.costo != null && (
             <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100">
               <h2
-                className="text-xl sm:text-2xl font-bold mb-2"
+                className="text-xl sm:text-2xl font-bold mb-2 uppercase"
                 style={{ color: colors.primary }}
               >
                 Costo
               </h2>
-              <p className="text-base sm:text-lg text-slate-900">
+              <p className="text-lg sm:text-xl text-slate-900">
                 {beneficio.costo === 0 ? "Gratuito" : `$${beneficio.costo}`}
               </p>
             </section>
@@ -143,13 +144,13 @@ export default function Beneficio() {
                 className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm"
               >
                 <h2
-                  className="text-xl sm:text-2xl font-bold mb-2"
+                  className="text-xl sm:text-2xl font-bold mb-2 uppercase"
                   style={{ color: colors.primary }}
                 >
                   {b.nombre || `Bloque ${b.bloque}`}
                 </h2>
 
-                <div className="text-base sm:text-lg leading-relaxed text-slate-900 whitespace-pre-line">
+                <div className="text-lg sm:text-xl leading-relaxed text-slate-900 whitespace-pre-line">
                   {formatTextAsList(b.contenido)}
                 </div>
               </section>
@@ -162,7 +163,7 @@ export default function Beneficio() {
           <section className="max-w-5xl mx-auto mt-10 bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between gap-2 mb-4">
               <h2
-                className="text-xl sm:text-2xl font-bold"
+                className="text-xl sm:text-2xl font-bold uppercase"
                 style={{ color: colors.primary }}
               >
                 ¿Dónde puedo acceder a este beneficio?
@@ -191,7 +192,7 @@ export default function Beneficio() {
 
               {/* Acciones al lado del mapa (cuando está pequeño) */}
               <div className={mapExpanded ? "space-y-3" : "flex flex-col justify-between gap-4"}>
-                <p className="text-sm sm:text-base text-slate-700">
+                <p className="text-lg sm:text-xl text-slate-900">
                   Aquí puedes ver el lugar donde se entrega este beneficio. Acércate a la
                   sucursal o centro de salud para más información.
                 </p>
