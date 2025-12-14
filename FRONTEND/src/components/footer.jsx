@@ -23,7 +23,7 @@ export default function Footer({ onFontChange, onColorChange }) {
       <div className="flex items-center gap-2">
         <Phone size={24} />
         <span className="text-base sm:text-lg font-semibold select-none">
-          Ayuda: +56 9 1234 5678
+          Soporte tecnico de la plataforma: +56 9 1234 5678
         </span>
       </div>
 

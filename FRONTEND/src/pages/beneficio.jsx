@@ -158,73 +158,78 @@ export default function Beneficio() {
           </div>
         )}
 
-        {/* 🗺️ Bloque del mapa + acciones */}
-        {beneficio && (
-          <section className="max-w-5xl mx-auto mt-10 bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <h2
-                className="text-xl sm:text-2xl font-bold uppercase"
-                style={{ color: colors.primary }}
-              >
-                ¿Dónde puedo acceder a este beneficio?
-              </h2>
+        {/* SECCIÓN MAPA + ACCIONES */}
+        <section className="max-w-5xl mx-auto mt-10 bg-white rounded-3xl p-6 sm:p-7 shadow-md border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <h2
+              className="text-xl sm:text-2xl font-bold uppercase"
+              style={{ color: colors.primary }}
+            >
+              ¿Dónde puedo acceder a este beneficio?
+            </h2>
+          </div>
 
+          <div
+            className={
+              mapExpanded
+                ? "space-y-4"
+                : "grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6 items-stretch"
+            }
+          >
+            {/* Contenedor del mapa */}
+            <div
+              className={`relative ${
+                mapExpanded ? "h-80 md:h-96" : "h-56"
+              } rounded-2xl overflow-hidden border border-slate-200`}
+            >
+              {/* Botón flotando sobre el mapa, mismo estilo de botones */}
               <button
                 type="button"
                 onClick={() => setMapExpanded((v) => !v)}
-                className="text-xs sm:text-sm px-3 py-1 rounded-full border border-slate-300 hover:bg-slate-100"
+                className="absolute top-2 right-2 z-10 text-xs sm:text-sm px-3 py-1 rounded-full border border-slate-300 bg-white/90 hover:bg-slate-100"
               >
                 {mapExpanded ? "Ver mapa pequeño" : "Ver mapa grande"}
               </button>
+
+              <MapaBeneficio
+                slug={beneficio.slug}
+                zoom={mapExpanded ? 16 : 15}
+                mapExpanded={mapExpanded}
+              />
             </div>
 
-            <div
-              className={
-                mapExpanded
-                  ? "space-y-4"
-                  : "grid grid-cols-1 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6 items-stretch"
-              }
-            >
-              {/* Contenedor del mapa */}
-              <div className={mapExpanded ? "h-80 md:h-96" : "h-56"}>
-                <MapaBeneficio slug={beneficio.slug} zoom={mapExpanded ? 16 : 15} />
-              </div>
+            {/* Acciones al lado del mapa (cuando está pequeño) */}
+            <div className={mapExpanded ? "space-y-3" : "flex flex-col justify-between gap-4"}>
+              <p className="text-lg sm:text-xl text-slate-900">
+                Aquí puedes ver el lugar donde se entrega este beneficio. Acércate a la
+                sucursal o centro de salud para más información.
+              </p>
 
-              {/* Acciones al lado del mapa (cuando está pequeño) */}
-              <div className={mapExpanded ? "space-y-3" : "flex flex-col justify-between gap-4"}>
-                <p className="text-lg sm:text-xl text-slate-900">
-                  Aquí puedes ver el lugar donde se entrega este beneficio. Acércate a la
-                  sucursal o centro de salud para más información.
-                </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  className="flex-1 py-3 rounded-2xl text-[16px] font-bold text-white"
+                  style={{ backgroundColor: colors.dark }}
+                >
+                  Postular
+                </button>
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    className="flex-1 py-3 rounded-2xl text-[16px] font-bold text-white"
-                    style={{ backgroundColor: colors.dark }}
-                  >
-                    Postular
-                  </button>
+                <button
+                  className="flex-1 py-3 rounded-2xl text-[16px] font-semibold border border-slate-300 text-slate-800 hover:bg-slate-50"
+                  type="button"
+                >
+                  Saber más
+                </button>
 
-                  <button
-                    className="flex-1 py-3 rounded-2xl text-[16px] font-semibold border border-slate-300 text-slate-800 hover:bg-slate-50"
-                    type="button"
-                  >
-                    Saber más
-                  </button>
-
-                  <button
-                    className="flex-1 py-3 rounded-2xl text-[16px] font-semibold border border-slate-300 text-slate-800 hover:bg-slate-50"
-                    type="button"
-                  >
-                    Descargar ficha
-                  </button>
-                </div>
+                <button
+                  className="flex-1 py-3 rounded-2xl text-[16px] font-semibold border border-slate-300 text-slate-800 hover:bg-slate-50"
+                  type="button"
+                >
+                  Descargar ficha
+                </button>
               </div>
             </div>
-          </section>
-        )}
-
-
+          </div>
+        </section>
       </div>
     </InternalLayout>
   );
