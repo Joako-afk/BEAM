@@ -34,7 +34,7 @@ export function generatePalette(primary) {
   return {
     primary: safePrimary,
     secondary: lighten(safePrimary, 0.4),
-    tertiary: lighten(safePrimary, 0.65),
+    tertiary: darken(safePrimary, 0.6),
     light: lighten(safePrimary, 0.8),
     dark: darken(safePrimary, 0.6),
     text: bestTextColor(safePrimary),

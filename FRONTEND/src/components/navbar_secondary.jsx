@@ -36,8 +36,8 @@ export default function NavbarSecondary({ title }) {
         to="/"
         className="
           flex items-center gap-3
-          bg-[var(--secondary)] hover:bg-[var(--dark)]
-          transition-colors
+          bg-[var(--secondary)] hover:opacity-80
+          transition-opacity
           px-6 py-4 sm:px-7 sm:py-4
           rounded-2xl
           text-lg
@@ -57,8 +57,8 @@ export default function NavbarSecondary({ title }) {
         onClick={() => navigate(-1)}
         className="
           flex items-center gap-3
-          bg-[var(--secondary)] hover:bg-[var(--dark)]
-          transition-colors
+          bg-[var(--secondary)] hover:opacity-80
+          transition-opacity
           px-6 py-4 sm:px-7 sm:py-4
           rounded-2xl
           text-lg

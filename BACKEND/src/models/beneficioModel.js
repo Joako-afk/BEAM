@@ -94,8 +94,10 @@ export const obtenerBeneficioPorSlug = async (slug) => {
       b.edad_minima,
       b.slug,
       b.icon_name,
-      b.id_categoria
+      b.id_categoria,
+      c.color_primary
     FROM beneficio b
+    JOIN categoria c ON c.id_categoria = b.id_categoria
     WHERE b.slug = $1
     LIMIT 1
     `,

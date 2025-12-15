@@ -1,84 +1,89 @@
+// src/components/mapaBeneficio.jsx
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 
-function RecenterOnResize({ center, zoom, mapExpanded }) {
+// 1. Componente para reportar al padre que el mapa cargó (para PDF)
+function MapReady({ onMapReady }) {
   const map = useMap();
-
   useEffect(() => {
-    // Leaflet necesita recalcular el tamaño cuando cambia la altura por CSS
-    // (y con transición, conviene darle un pelín de tiempo)
-    const t = setTimeout(() => {
-      map.invalidateSize();
+    onMapReady?.(map);
+  }, [map, onMapReady]);
+  return null;
+}
 
-      // Cuando pasa a pequeño, lo centramos en el punto
-      if (!mapExpanded && center) {
-        map.setView(center, zoom, { animate: true });
-      }
-    }, 120);
-
-    return () => clearTimeout(t);
-  }, [map, center, zoom, mapExpanded]);
+// 2. Componente CRÍTICO: Fuerza al mapa a moverse si cambian las coordenadas
+function Recenter({ lat, lng, zoom }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    // Si las coordenadas son válidas, movemos la cámara
+    if (lat && lng) {
+      map.setView([lat, lng], zoom);
+    }
+  }, [lat, lng, zoom, map]);
 
   return null;
 }
 
-export default function MapaBeneficio({ slug, zoom = 16, mapExpanded }) {
+// 3. Componente para recalcular tamaño al expandir (Agrandar/Achicar)
+function MapResizer({ isExpanded }) {
+  const map = useMap();
+
+  useEffect(() => {
+    // Esperamos a que la animación de Tailwind termine (300ms)
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [isExpanded, map]);
+
+  return null;
+}
+
+export default function MapaBeneficio({
+  slug,
+  zoom = 15,
+  mapExpanded, // Recibimos el estado de expansión
+  onLoadOrganismos,
+  onMapReady,
+}) {
   const [organismos, setOrganismos] = useState([]);
-  const [center, setCenter] = useState([-41.6169, -73.5956]); // Puerto Varas aprox
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!slug) return;
-
     setLoading(true);
-    setError(null);
-
-    fetch(
-      `http://localhost:4000/api/beneficios/${encodeURIComponent(slug)}/organismos`
-    )
+    
+    fetch(`http://localhost:4000/api/beneficios/${encodeURIComponent(slug)}/organismos`)
       .then((res) => {
-        if (!res.ok) throw new Error("No se pudieron cargar las sucursales");
+        if (!res.ok) throw new Error("Error cargando ubicación");
         return res.json();
       })
       .then((data) => {
-        if (!Array.isArray(data) || data.length === 0) {
-          setOrganismos([]);
-          return;
-        }
-
-        setOrganismos(data);
-
-        // Mantengo tu truco: el JSON viene “al revés”
-        const o0 = data[0];
-        setCenter([o0.lng, o0.lat]);
+        const safe = Array.isArray(data) ? data : [];
+        setOrganismos(safe);
+        onLoadOrganismos?.(safe);
       })
       .catch((err) => {
-        setError(err.message);
+        console.error(err);
+        setError("Ubicación no disponible");
       })
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [slug, onLoadOrganismos]);
 
   if (loading) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-sm text-slate-500 rounded-2xl border border-slate-200">
-        Cargando ubicación del beneficio…
+      <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-500 animate-pulse">
+        Cargando mapa...
       </div>
     );
   }
 
-  if (error) {
+  if (error || !organismos || organismos.length === 0) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-sm text-red-500 rounded-2xl border border-red-200">
-        {error}
-      </div>
-    );
-  }
-
-  if (!organismos || organismos.length === 0) {
-    return (
-      <div className="w-full h-full flex items-center justify-center text-sm text-slate-500 rounded-2xl border border-dashed border-slate-300">
-        Este beneficio aún no tiene una ubicación asociada.
+      <div className="w-full h-full flex items-center justify-center bg-slate-50 text-slate-400 border border-slate-200">
+        Sin ubicación disponible
       </div>
     );
   }
@@ -86,29 +91,38 @@ export default function MapaBeneficio({ slug, zoom = 16, mapExpanded }) {
   const o = organismos[0];
 
   return (
-    <div className="w-full h-full rounded-2xl overflow-hidden border border-slate-200">
+    // IMPORTANTE: El z-index 0 evita que tape el menú
+    <div className="w-full h-full relative z-0">
       <MapContainer
-        center={center}
+        // Centro inicial (Latitud, Longitud)
+        center={[o.lat, o.lng]} 
         zoom={zoom}
         scrollWheelZoom={false}
         style={{ width: "100%", height: "100%" }}
-        className="z-0"
       >
         <TileLayer
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; OpenStreetMap contributors"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
 
-        {/* ✅ esto hace que al achicar se centre en el punto */}
-        <RecenterOnResize center={center} zoom={zoom} mapExpanded={mapExpanded} />
+        {/* --- CONTROLADORES DEL MAPA --- */}
+        
+        {/* 1. Forzar recentrado si cambian las coordenadas o el zoom */}
+        <Recenter lat={o.lat} lng={o.lng} zoom={zoom} />
 
-        <Marker position={center}>
+        {/* 2. Recalcular tamaño si se expande el contenedor */}
+        <MapResizer isExpanded={mapExpanded} />
+
+        {/* 3. Notificar que está listo (PDF) */}
+        <MapReady onMapReady={onMapReady} />
+
+        {/* Marcador */}
+        <Marker position={[o.lat, o.lng]}>
           <Popup>
-            <strong>{o.nombre_sucursal}</strong>
-            <br />
-            {o.direccion}
-            <br />
-            {o.telefono && <span>Tel: {o.telefono}</span>}
+            <div className="text-center">
+              <strong className="block text-sm mb-1">{o.nombre_sucursal}</strong>
+              <span className="text-xs text-gray-600">{o.direccion}</span>
+            </div>
           </Popup>
         </Marker>
       </MapContainer>
