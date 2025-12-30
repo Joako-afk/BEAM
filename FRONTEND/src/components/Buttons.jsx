@@ -47,15 +47,17 @@ export function ButtonCard({ text, icon: Icon, onClick, href, color, disabled, l
 }
 
 
-export function ButtonNav({ text, icon: Icon, onClick, badge, className = "" }) {
+export function ButtonNav({ text, icon: Icon, onClick, badge, className = "", showText = false, style }) {
   return (
     <button
       onClick={onClick}
+      style={style}
       className={`
         relative flex items-center gap-2 sm:gap-3
         transition-colors hover:brightness-110
         px-4 py-2 sm:px-6 sm:py-3
         rounded-xl
+        border border-white/20
         text-sm sm:text-lg font-semibold tracking-wide
         select-none text-white
         ${className}
@@ -64,7 +66,7 @@ export function ButtonNav({ text, icon: Icon, onClick, badge, className = "" }) 
       {Icon && <Icon size={24} strokeWidth={2.5} />}
       
       {/* Texto visible */}
-      <span className="hidden sm:inline">{text}</span>
+      <span className={showText ? "inline" : "hidden sm:inline"}>{text}</span>
 
       {/* Globo de notificación */}
       {badge > 0 && (

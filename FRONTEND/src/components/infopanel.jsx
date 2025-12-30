@@ -19,7 +19,7 @@ export default function InfoPanel({
         <div
           className="
             text-center px-6 py-4 sm:py-5
-            rounded-b-2xl shadow-md max-w-4xl w-full animate-fadeIn
+            rounded-2xl shadow-md max-w-4xl w-full animate-fadeIn
           "
           style={{
             backgroundColor: primary,

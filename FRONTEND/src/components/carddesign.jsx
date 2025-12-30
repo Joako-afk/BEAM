@@ -16,7 +16,7 @@ export default function CardDesign({
         block rounded-3xl overflow-hidden cursor-pointer shadow-lg
         transition-transform hover:scale-[1.03]
         w-full max-w-[15rem] h-full flex flex-col
-        justify-self-start
+        justify-self-center
       "
       style={{ backgroundColor: color }}
     >
@@ -46,7 +46,7 @@ export default function CardDesign({
         className="
           flex items-center justify-center
           rounded-b-3xl px-4 py-3 sm:py-4
-          mt-auto h-20
+          mt-auto h-24
         "
         style={{
           backgroundColor: barColor || color,
@@ -56,6 +56,7 @@ export default function CardDesign({
           className="
             font-semibold text-white text-center leading-tight
             whitespace-normal break-words
+            line-clamp-3
             text-[18px] sm:text-[19px] md:text-[21px]
           "
         >

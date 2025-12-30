@@ -14,7 +14,6 @@ export default function Categoria() {
   const [beneficios, setBeneficios] = useState([]);
 
   useEffect(() => {
-    // ESTA ES LA RUTA CORRECTA PARA CATEGORÍA
     fetch(`http://localhost:4000/api/beneficios/categoria/${slug}`)
       .then((res) => res.json())
       .then((data) => {
@@ -49,22 +48,43 @@ export default function Categoria() {
   return (
     <InternalLayout title={categoria.nombre}>
       <div
-        className="w-full flex flex-col items-center pt-20"
+        className="
+          w-full flex flex-col items-center 
+          pb-24 px-4 pt-1
+        "
         style={{ backgroundColor: "var(--light)", minHeight: "100vh" }}
       >
-        <div className="-mt-19 w-full flex justify-center">
+        
+        {/* Panel de información */}
+        <div className="w-full flex justify-center mb-8 -mt-15">
           <InfoPanel text={categoria.descripcion} />
         </div>
 
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] items-stretch justify-items-start gap-6 mb-20 px-4 w-full max-w-6xl">
+        {/* GRID DE TARJETAS CORREGIDO */}
+        <div className="
+          w-full max-w-6xl
+          grid 
+          /* 1. MÓVIL: grid-cols-1 (Una sola columna) */
+          /* 2. PC: Se adapta automáticamente */
+          grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4
+          
+          /* 3. CENTRADO: Esto centra las tarjetas en su columna */
+          justify-items-center
+          
+          gap-6
+        ">
+          
           {beneficios.length === 0 && (
-            <p className="col-span-full text-gray-600">
-              No hay beneficios disponibles.
+            <p className="col-span-full text-gray-600 text-center py-10">
+              No hay beneficios disponibles en esta categoría.
             </p>
           )}
 
           {beneficios.map((benef) => (
-            <div key={benef.id_beneficio} className="h-full">{cardBeneficio(benef)}</div>
+            /* Ajustamos el ancho máximo en móvil para que se vea como una tarjeta centrada y no ocupe toda la pantalla de borde a borde si no quieres */
+            <div key={benef.id_beneficio} className="h-full w-full max-w-[320px] sm:max-w-none">
+              {cardBeneficio(benef)}
+            </div>
           ))}
         </div>
       </div>

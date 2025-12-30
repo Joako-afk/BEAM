@@ -28,7 +28,7 @@ export default function Navbar({ back = false }) {
   return (
     <header
       className="
-        fixed top-0 left-0 w-full
+        sticky top-0 left-0 w-full
         flex items-center justify-between
         px-6 sm:px-12 py-5
         bg-[#3e6a0f] text-white
@@ -47,10 +47,11 @@ export default function Navbar({ back = false }) {
       {/* BOTÓN NOTIFICACIONES */}
       {!back && (
         <button
+          style={{ backgroundColor: "var(--secondary, #2f540c)" }}
           className="
             relative flex items-center gap-3
-            bg-[#2f540c] hover:bg-[#3f7014]
-            transition-colors
+            hover:brightness-110
+            transition-all
             px-6 py-4 sm:px-7 sm:py-4
             rounded-2xl
             w-[140px] sm:w-[180px]
