@@ -1,6 +1,6 @@
 // src/components/card.jsx
 import { useNavigate } from "react-router-dom";
-import CardDesign from "../components/carddesign";
+import CardDesign from "./carddesign";
 
 // Componente interno para categoría
 function CategoriaCardComponent({ data }) {

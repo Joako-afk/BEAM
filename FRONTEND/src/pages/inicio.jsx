@@ -35,9 +35,14 @@ export default function Inicio() {
       
       <SearchBar value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] items-stretch gap-6 mb-20 px-4 mt-8 w-full max-w-6xl">
+      <div className="
+        grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4
+        justify-items-center
+        gap-6 mb-20 px-4 mt-8 w-full max-w-6xl
+      ">
         {filtradas.map((cat) => (
-          <div key={cat.id_categoria} className="h-full">
+          /* Se asegura que la tarjeta ocupe el ancho disponible de su columna */
+          <div key={cat.id_categoria} className="h-full w-full max-w-[320px] sm:max-w-none">
             {cardCategoria(cat)}
           </div>
         ))}

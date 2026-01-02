@@ -7,7 +7,7 @@ import { generatePalette } from "../utils/generatePalette";
 import { formatTextAsList } from "../utils/textoalista.jsx";
 import InternalLayout from "../layouts/internal";
 import MapaBeneficio from "../components/mapaBeneficio.jsx";
-import { ButtonCard } from "../components/Buttons.jsx"; // Mantenido como estaba
+import { ButtonCard } from "../components/buttons.jsx"; // Mantenido como estaba
 
 export default function Beneficio() {
   const { slug } = useParams();
