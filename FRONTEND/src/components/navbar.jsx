@@ -1,12 +1,12 @@
 // src/components/navbar.jsx
 import { Link, useLocation } from "react-router-dom";
-import { Home, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
 
 export default function Navbar({ back = false }) {
   const location = useLocation();
 
   const pageNames = {
-    "/": "INICIO",
+    "/": "Categorías de beneficios",
     "/organizaciones-sociales": "ORGANIZACIONES",
     "/eventos": "EVENTOS",
     "/salud": "SALUD",
@@ -29,18 +29,18 @@ export default function Navbar({ back = false }) {
     <header
       className="
         sticky top-0 left-0 w-full
-        flex items-center justify-between
-        px-6 sm:px-12 py-5
+        px-6 lg:px-12 py-5
         bg-[#3e6a0f] text-white
         z-50 shadow-lg
+        grid grid-cols-2 gap-y-4 items-center
+        lg:flex lg:justify-between lg:gap-0
       "
     >
       {/* ESPACIADOR IZQUIERDO */}
-      <div className="w-[140px] sm:w-[180px]"></div>
+      <div className="hidden lg:block lg:w-[180px]"></div>
 
       {/* TÍTULO CENTRADO */}
-      <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide text-center select-none flex items-center gap-3">
-        <Home size={30} className="inline-block sm:hidden" />
+      <h1 className="order-3 col-span-2 lg:order-none lg:w-auto text-2xl lg:text-3xl font-extrabold tracking-wide text-center select-none flex justify-center items-center gap-3">
         {currentPage}
       </h1>
 
@@ -49,18 +49,19 @@ export default function Navbar({ back = false }) {
         <button
           style={{ backgroundColor: "var(--secondary, #2f540c)" }}
           className="
+            order-2 col-start-2 justify-self-end lg:order-none lg:justify-self-auto
             relative flex items-center gap-3
             hover:brightness-110
             transition-all
-            px-6 py-4 sm:px-7 sm:py-4
+            px-6 py-4 lg:px-7 lg:py-4
             rounded-2xl
-            w-[140px] sm:w-[180px]
+            w-auto lg:w-auto
             flex justify-center
             text-lg
           "
         >
-          <Bell size={30} strokeWidth={2.5} />
-          <span className="hidden sm:inline font-semibold tracking-wide text-lg">
+          <Bell size={30} strokeWidth={2.5} className="shrink-0" />
+          <span className="hidden lg:inline font-semibold tracking-wide text-lg">
             Notificaciones
           </span>
 
@@ -78,7 +79,7 @@ export default function Navbar({ back = false }) {
         </button>
       )}
 
-      {back && <div className="w-[140px] sm:w-[180px]"></div>}
+      {back && <div className="hidden lg:block lg:w-[180px]"></div>}
     </header>
   );
 }

@@ -1,9 +1,15 @@
 import express from "express";
-import { getInstitucionesPorCategoria } from "../controllers/organismoController.js";
+import {
+  getInstitucionesPorCategoria,
+  getInstitucionPorSlug,
+} from "../controllers/organismoController.js";
 
 const router = express.Router();
 
-// Ruta: /api/instituciones/categoria/:slug
+// 1) Primero la ruta específica
 router.get("/categoria/:slug", getInstitucionesPorCategoria);
+
+// 2) Después la ruta genérica (detalle)
+router.get("/:slug", getInstitucionPorSlug);
 
 export default router;

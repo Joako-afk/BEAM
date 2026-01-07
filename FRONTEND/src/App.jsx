@@ -6,7 +6,8 @@ import Beneficio from "./pages/beneficio";
 import Inicio from "./pages/inicio";
 import Categoria from "./pages/categoria";
 import Login from "./pages/login";
-import Organizaciones from "./pages/organizaciones";
+import Institucion from "./pages/institucion";
+
 
 
 export default function App() {
@@ -24,7 +25,8 @@ export default function App() {
 
       {/* Página dinámica de categoría */}
       <Route path="/categoria/:slug" element={<Categoria />} />
-      <Route path="/organizacion/:slug" element={<Organizaciones />} />
+      <Route path="/institucion/:slug" element={<Institucion />} />
+
 
       {/* Página dinámica de beneficio */}
 

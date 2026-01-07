@@ -46,19 +46,21 @@ export default function Categoria() {
 
           // iconos: instituciones no traen icon_name → usa el de la categoría
           icon_name: esOrganizaciones
-            ? (data.categoria.icon_name || "default.svg")
+            ? (x.logo_url || data.categoria.icon_name || "default.svg")
             : x.icon_name,
+
+          // Pasamos el logo_url original por si la tarjeta lo requiere
+          logo_url: esOrganizaciones ? x.logo_url : undefined,
 
           colors: palette,
 
           onClick: esOrganizaciones
-            ? () => {
-                // después lo hacemos navegar a detalle por slug/id
-              }
+            ? () => navigate(`/institucion/${x.slug}`, { state: { colors: palette } })
             : () =>
                 navigate(`/beneficio/${x.slug}`, {
                   state: { colors: palette },
                 }),
+
         }));
 
         setItems(enhanced);

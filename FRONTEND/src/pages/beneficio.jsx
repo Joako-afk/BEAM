@@ -1,8 +1,8 @@
 // src/pages/beneficio.jsx
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { MapPin, Download, ExternalLink, FileCheck } from "lucide-react"; 
-import { exportBeneficioPdf } from "../utils/pdf.js";
+import { MapPin, Download, ExternalLink, FileCheck, Maximize2, Minimize2 } from "lucide-react"; 
+
 import { generatePalette } from "../utils/generatePalette";
 import { formatTextAsList } from "../utils/textoalista.jsx";
 import InternalLayout from "../layouts/internal";
@@ -103,69 +103,94 @@ export default function Beneficio() {
 
         {/* GRID DE BLOQUES */}
         <div className="max-w-5xl mx-auto mt-8 grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-          
-          {/* REQUISITOS */}
-          {requisitosTexto && (
-            <section className="col-span-2 md:col-span-1 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold mb-2 uppercase" style={{ color: colors.primary }}>Requisitos</h2>
-              <div className="text-lg text-slate-900 leading-relaxed">{formatTextAsList(requisitosTexto)}</div>
-            </section>
-          )}
-
-          {/* === APLICADA MEJORA 3: CONTENEDOR HÍBRIDO (Edad + Costo) === */}
-          {(beneficio.edad_minima != null || beneficio.costo != null) && (
-            <div className="
-              col-span-2 md:col-span-2 
-              grid 
-              grid-cols-[1.5fr_1fr] md:grid-cols-2 
-              gap-4 sm:gap-6 items-start
-            ">
-              
-              {/* EDAD (Se lleva la parte más ancha en móvil para que quepa el título) */}
-              {beneficio.edad_minima != null ? (
-                <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex flex-col justify-start h-full">
-                  <h2 className="text-xl font-bold mb-1 uppercase leading-none" style={{ color: colors.primary }}>
-                    Edad Mínima
-                  </h2>
-                  <p className="text-lg text-slate-900 leading-tight mt-1">{textoEdad}</p>
-                </section>
-              ) : <div className="hidden md:block"></div>}
-
-              {/* COSTO (Se lleva la parte más angosta en móvil) */}
-              {beneficio.costo != null ? (
-                <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex flex-col justify-start h-full">
-                  <h2 className="text-xl font-bold mb-1 uppercase leading-none" style={{ color: colors.primary }}>
-                    Costo
-                  </h2>
-                  <p className="text-lg text-slate-900 leading-tight mt-1">{textoCosto}</p>
-                </section>
-              ) : <div className="hidden md:block"></div>}
-
+  
+        {/* REQUISITOS
+            - Móvil: ocupa 2 columnas (igual que ahora)
+            - PC: ocupa 2 columnas (queda grande a la izquierda) */}
+        {requisitosTexto && (
+          <section className="col-span-2 md:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100 break-inside-avoid">
+            <h2 className="text-xl font-bold mb-2 uppercase" style={{ color: colors.primary }}>
+              Requisitos
+            </h2>
+            <div className="text-lg text-slate-900 leading-relaxed">
+              {formatTextAsList(requisitosTexto)}
             </div>
-          )}
+          </section>
+        )}
 
-          {/* OTROS BLOQUES */}
-          {beneficio.info_bloques && beneficio.info_bloques.map((info) => (
-            <section key={info.id_info} className="col-span-2 md:col-span-1 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-              <h2 className="text-xl font-bold mb-2 uppercase" style={{ color: colors.primary }}>
-                {info.nombre}
-              </h2>
-              <div className="text-lg text-slate-900 leading-relaxed">{formatTextAsList(info.contenido)}</div>
-            </section>
-          ))}
-        </div>
+        {/* CONDICIONES (Edad + Costo combinados)
+            - Móvil: mantiene tu lógica actual (dos cards en una fila 1.5fr/1fr)
+            - PC: se convierte en columna derecha apilada (Edad arriba, Costo abajo) */}
+        {(beneficio.edad_minima != null || beneficio.costo != null) && (
+          <div
+            className="
+              col-span-2 md:col-span-1
+              grid grid-cols-[1.5fr_1fr] gap-4 sm:gap-6 
+              md:flex md:flex-col
+            "
+          >
+            {/* EDAD */}
+            {beneficio.edad_minima != null ? (
+              <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex flex-col justify-start h-full break-inside-avoid">
+                <h2 className="text-xl font-bold mb-1 uppercase leading-none" style={{ color: colors.primary }}>
+                  Edad Mínima
+                </h2>
+                <p className="text-lg text-slate-900 leading-tight mt-1">{textoEdad}</p>
+              </section>
+            ) : (
+              <div className="hidden md:block" />
+            )}
+
+            {/* COSTO */}
+            {beneficio.costo != null ? (
+              <section className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-100 flex flex-col justify-start h-full break-inside-avoid">
+                <h2 className="text-xl font-bold mb-1 uppercase leading-none" style={{ color: colors.primary }}>
+                  Costo
+                </h2>
+                <p className="text-lg text-slate-900 leading-tight mt-1">{textoCosto}</p>
+              </section>
+            ) : (
+              <div className="hidden md:block" />
+            )}
+          </div>
+        )}
+
+        {/* OTROS BLOQUES
+            - Móvil: siguen ocupando 2 columnas (igual que tú)
+            - PC: quedan en 1 columna cada uno (3 columnas totales) */}
+        {beneficio.info_bloques && beneficio.info_bloques.map((info) => (
+          <section key={info.id_info} className="col-span-2 md:col-span-1 bg-white rounded-2xl p-5 shadow-sm border border-gray-100 break-inside-avoid">
+            <h2 className="text-xl font-bold mb-2 uppercase" style={{ color: colors.primary }}>
+              {info.nombre}
+            </h2>
+            <div className="text-lg text-slate-900 leading-relaxed">
+              {formatTextAsList(info.contenido)}
+            </div>
+          </section>
+        ))}
+      </div>
+
+
 
         {/* MAPA Y BOTONES */}
-        <section className="max-w-5xl mx-auto mt-10 bg-white rounded-3xl p-6 sm:p-7 shadow-md border border-gray-100">
+        <section className="max-w-5xl mx-auto mt-10 bg-white rounded-3xl p-6 sm:p-7 shadow-md border border-gray-100 break-inside-avoid">
           <h2 className="text-2xl font-bold uppercase mb-4" style={{ color: colors.primary }}>
             ¿Dónde puedo acceder a este beneficio?
           </h2>
 
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className="flex-1 flex flex-col gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-[1fr_auto] gap-8">
+            <div className="flex flex-col gap-4 order-1 lg:row-span-2">
               <div className={`relative w-full rounded-2xl overflow-hidden border border-slate-200 transition-all duration-300 ${mapExpanded ? "h-[410px]" : "h-64"}`}>
-                <button onClick={() => setMapExpanded(!mapExpanded)} className="absolute top-2 right-2 z-10 bg-white px-3 py-1 text-xs font-bold rounded-full shadow-md">
-                  {mapExpanded ? "Achicar" : "Agrandar"}
+                <button 
+                  onClick={() => setMapExpanded(!mapExpanded)} 
+                  className="absolute top-3 right-3 z-10 px-4 py-2 text-sm font-bold text-white rounded-xl shadow-lg transition-all hover:opacity-90 active:scale-95 flex items-center gap-2 print:hidden"
+                  style={{ backgroundColor: colors.secondary }}
+                >
+                  {mapExpanded ? (
+                    <><Minimize2 size={16} /> Achicar</>
+                  ) : (
+                    <><Maximize2 size={16} /> Agrandar</>
+                  )}
                 </button>
                 <div id="map-interactive" className="w-full h-full">
                   <MapaBeneficio slug={beneficio.slug} zoom={15} mapExpanded={mapExpanded} onLoadOrganismos={setOrganismos} onMapReady={setLeafletMap} />
@@ -174,8 +199,7 @@ export default function Beneficio() {
               </div>
             </div>
 
-            <div className="flex-1 flex flex-col justify-between">
-              <div className="mb-6">
+            <div className="mb-6 order-3 lg:order-2 print:order-none">
                 <p className="text-xl text-slate-900 mb-4 leading-relaxed">
                   Aquí puedes ver el lugar donde se entrega este beneficio. 
                   Acércate a la sucursal o centro de salud para más información.
@@ -188,14 +212,25 @@ export default function Beneficio() {
                 ) : (
                   <p className="text-slate-500 italic">Ubicación no disponible.</p>
                 )}
-              </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4 mt-auto">
+            <div className="grid grid-cols-2 gap-4 mt-auto order-2 lg:order-3 print:hidden">
                 <ButtonCard text="Postular" icon={FileCheck} color={colors.secondary} onClick={() => alert("Formulario de postulación...")} />
                 <ButtonCard text="Saber más" icon={ExternalLink} color={colors.tertiary} href={sucursal?.url || "https://www.chileatiende.gob.cl"} />
                 <ButtonCard text="Cómo llegar" icon={MapPin} color={colors.tertiary} href={sucursal ? `https://www.google.com/maps/dir/?api=1&destination=${sucursal.lat},${sucursal.lng}` : null} disabled={!sucursal} />
-                <ButtonCard text="Descargar" icon={Download} color={colors.secondary} onClick={descargarPDF} loading={pdfLoading} />
-              </div>
+                <ButtonCard text="Descargar" icon={Download} color={colors.secondary} 
+                  onClick={() => {
+                    const titleNode = document.querySelector("[data-pdf-title]");
+                    const pageTitle = titleNode?.textContent || "beneficio";
+                    const originalTitle =document.title;
+                    document.title = pageTitle;
+                    window.print();
+                    setTimeout(() => {
+                      document.title = originalTitle;
+                    }, 500);
+                  }
+                  
+                  } />
             </div>
           </div>
         </section>

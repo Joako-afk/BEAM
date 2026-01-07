@@ -52,7 +52,7 @@ export default function Footer({ onColorChange }) {
   return (
     <footer
       className="
-        fixed bottom-0 left-0 w-full
+        print:hidden  fixed bottom-0 left-0 w-full
         flex justify-between items-center
         px-4 sm:px-12 py-3 sm:py-4
         shadow-[0_-2px_8px_rgba(0,0,0,0.3)]

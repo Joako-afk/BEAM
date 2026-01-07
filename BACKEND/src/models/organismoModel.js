@@ -18,7 +18,7 @@ export const obtenerTodasLasInstituciones = async () => {
   return result.rows;
 };
 
-// ✅ CLAVE: instituciones por slug de categoría (igual patrón que beneficios)
+// CLAVE: instituciones por slug de categoría (igual patrón que beneficios)
 export const obtenerInstitucionesPorSlugCategoria = async (slugCategoria) => {
   const catRes = await pool.query(
     `
@@ -45,6 +45,7 @@ export const obtenerInstitucionesPorSlugCategoria = async (slugCategoria) => {
     SELECT 
       id_institucion,
       nombre,
+      slug,
       descripcion,
       pagina_web,
       logo_url,
@@ -70,3 +71,26 @@ export const obtenerInstitucionPorId = async (id) => {
   );
   return result.rows[0];
 };
+
+export const obtenerInstitucionPorSlug = async (slug) => {
+  const result = await pool.query(
+    `
+    SELECT 
+      id_institucion,
+      nombre,
+      slug,
+      descripcion,
+      pagina_web,
+      logo_url,
+      email_contacto,
+      id_categoria
+    FROM institucion
+    WHERE slug = $1
+    LIMIT 1
+    `,
+    [slug]
+  );
+
+  return result.rows[0] || null;
+};
+
