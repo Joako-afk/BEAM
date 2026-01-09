@@ -1,7 +1,7 @@
 ﻿// src/pages/categoria.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import InfoPanel from "../components/infopanel";
+import InfoPanelStatic from "../components/infoPanelStatic";
 import { generatePalette } from "../utils/generatePalette";
 import { cardBeneficio } from "../components/card";
 import InternalLayout from "../layouts/internal";
@@ -12,11 +12,13 @@ export default function Categoria() {
 
   const [categoria, setCategoria] = useState(null);
   const [items, setItems] = useState([]); // beneficios o instituciones
-  const [modo, setModo] = useState("beneficios"); // "beneficios" | "instituciones"
+
+  const esOrganizaciones = slug === "organizaciones-sociales";
+  const modo = esOrganizaciones ? "instituciones" : "beneficios";
 
   useEffect(() => {
-    const esOrganizaciones = slug === "organizaciones-sociales";
-    setModo(esOrganizaciones ? "instituciones" : "beneficios");
+    setCategoria(null);
+    setItems([]);
 
     const endpoint = esOrganizaciones
       ? `http://localhost:4000/api/instituciones/categoria/${slug}`
@@ -70,7 +72,7 @@ export default function Categoria() {
         setCategoria(null);
         setItems([]);
       });
-  }, [slug, navigate]);
+  }, [slug, navigate, esOrganizaciones]);
 
   if (!categoria) return <p className="pt-32 text-center">Cargando...</p>;
 
@@ -81,7 +83,15 @@ export default function Categoria() {
         style={{ backgroundColor: "var(--light)", minHeight: "100vh" }}
       >
         <div className="w-full flex justify-center mb-8 -mt-15">
-          <InfoPanel text={categoria.descripcion} />
+          <InfoPanelStatic
+            infoText={categoria.descripcion}
+            steps={[
+              "Revisa los beneficios disponibles en esta categoría.",
+              "Presiona un beneficio para ver requisitos y detalles.",
+              "Usa “Volver” para regresar.",
+            ]}
+          />
+
         </div>
 
         <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-items-center gap-6">

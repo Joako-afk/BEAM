@@ -78,7 +78,7 @@ export default function Institucion() {
                 src={institucion.logo_url.startsWith("http") || institucion.logo_url.startsWith("/") ? institucion.logo_url : `/icons/instituciones/${institucion.logo_url}`}
                 onError={(e) =>(e.currentTarget.src = "/icons/default.svg")}
                 alt="Logo"
-                className="w-20 h-20 object-contain"
+                className=" object-contain w-25 h-25 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 scale-[1.25]"
               />
             ) : (
               <div className="text-4xl">🏛️</div>

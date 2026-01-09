@@ -80,6 +80,9 @@ export default function Beneficio() {
   const textoCosto = beneficio.costo != null 
     ? (beneficio.costo === 0 ? "Gratuito" : `$${beneficio.costo}`) 
     : "";
+
+  const urlSaberMas = beneficio?.url_beneficio?.trim() || "";
+
   
   return (
     <InternalLayout title={beneficio.nombre}>
@@ -215,8 +218,8 @@ export default function Beneficio() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-auto order-2 lg:order-3 print:hidden">
-                <ButtonCard text="Postular" icon={FileCheck} color={colors.secondary} onClick={() => alert("Formulario de postulación...")} />
-                <ButtonCard text="Saber más" icon={ExternalLink} color={colors.tertiary} href={sucursal?.url || "https://www.chileatiende.gob.cl"} />
+                <ButtonCard text="Postular" icon={FileCheck} color={colors.secondary} disabled={true} />
+                <ButtonCard text="Saber más" icon={ExternalLink} color={colors.tertiary} href={urlSaberMas} disabled={!urlSaberMas} />
                 <ButtonCard text="Cómo llegar" icon={MapPin} color={colors.tertiary} href={sucursal ? `https://www.google.com/maps/dir/?api=1&destination=${sucursal.lat},${sucursal.lng}` : null} disabled={!sucursal} />
                 <ButtonCard text="Descargar" icon={Download} color={colors.secondary} 
                   onClick={() => {

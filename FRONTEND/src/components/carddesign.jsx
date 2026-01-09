@@ -36,9 +36,17 @@ export default function CardDesign({
         <img
           src={`/icons/${iconFolder}/${iconName}`}
           alt={title}
-          className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain"
           loading="lazy"
+          className={`
+            object-contain
+            w-28 h-28
+            sm:w-32 sm:h-32
+            md:w-36 md:h-36
+            lg:w-40 lg:h-40
+          `}
         />
+
+
       </div>
 
       {/* Franja inferior */}

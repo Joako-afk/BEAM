@@ -9,7 +9,7 @@ export default function SearchBar({ value, onChange }) {
           flex items-center
           bg-white shadow-md rounded-full
           px-5 py-3 sm:px-7 sm:py-4
-          w-11/12 sm:w-2/3 md:w-1/2
+          w-11/12 sm:w-10/12 md:w-9/12 lg:w-8/12 xl:w-[780px]
           border border-gray-300
         "
       >

@@ -53,7 +53,7 @@ export default function Navbar({ back = false }) {
             relative flex items-center gap-3
             hover:brightness-110
             transition-all
-            px-6 py-4 lg:px-7 lg:py-4
+            px-6 py-4 md:px-7 md:py-4
             rounded-2xl
             w-auto lg:w-auto
             flex justify-center
@@ -61,7 +61,7 @@ export default function Navbar({ back = false }) {
           "
         >
           <Bell size={30} strokeWidth={2.5} className="shrink-0" />
-          <span className="hidden lg:inline font-semibold tracking-wide text-lg">
+          <span className="hidden md:inline font-semibold tracking-wide text-lg">
             Notificaciones
           </span>
 
