@@ -145,8 +145,8 @@ export const obtenerOrganismosPorSlugBeneficio = async (slugBeneficio) => {
       o.tipo,
       o.direccion,
       o.telefono,
-      ST_Y(o.coordenadas) AS lat,
-      ST_X(o.coordenadas) AS lng
+      ST_X(o.coordenadas) AS lng,
+      ST_Y(o.coordenadas) AS lat
     FROM beneficio b
     JOIN beneficio_organismo bo
       ON bo.id_beneficio = b.id_beneficio

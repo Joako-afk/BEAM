@@ -18,7 +18,7 @@ function Recenter({ lat, lng, zoom }) {
   useEffect(() => {
     // Si las coordenadas son válidas, movemos la cámara
     if (lat && lng) {
-      map.setView([lat, lng], zoom);
+      map.setView([lng, lat], zoom);
     }
   }, [lat, lng, zoom, map]);
 
@@ -95,7 +95,7 @@ export default function MapaBeneficio({
     <div className="w-full h-full relative z-0">
       <MapContainer
         // Centro inicial (Latitud, Longitud)
-        center={[o.lat, o.lng]} 
+        center={[o.lng, o.lat]} 
         zoom={zoom}
         scrollWheelZoom={false}
         style={{ width: "100%", height: "100%" }}
@@ -117,7 +117,7 @@ export default function MapaBeneficio({
         <MapReady onMapReady={onMapReady} />
 
         {/* Marcador */}
-        <Marker position={[o.lat, o.lng]}>
+        <Marker position={[o.lng, o.lat]}>
           <Popup>
             <div className="text-center">
               <strong className="block text-sm mb-1">{o.nombre_sucursal}</strong>
