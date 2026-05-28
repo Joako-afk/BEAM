@@ -13,7 +13,7 @@ function CategoriaCardComponent({ data }) {
       color={data.colors.primary}
       lightColor={data.colors.light}
       barColor={data.colors.secondary}
-      iconFolder="categorias"  // 👈 usa /icons/categorias/
+      iconFolder="categorias" 
       onClick={() => navigate(`/categoria/${data.slug}`)}
     />
   );
@@ -34,8 +34,6 @@ function BeneficioCardComponent({ data }) {
       color={data.colors.primary}
       lightColor={data.colors.light}
       barColor={data.colors.secondary}
-
-      // ✅ aquí está la magia:
       iconFolder={isInstitucion ? "instituciones" : "beneficios"}
 
       onClick={data.onClick || (() => navigate(`/beneficio/${data.slug}`))}

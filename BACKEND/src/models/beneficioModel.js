@@ -16,7 +16,7 @@ export const obtenerBeneficiosPorCategoriaId = async (idCategoria) => {
       b.edad_minima,
       b.slug,
       b.icon_name,
-      b.url_beneficio,
+      
       b.id_categoria
     FROM beneficio b
     WHERE b.id_categoria = $1
@@ -65,7 +65,7 @@ export const obtenerBeneficiosPorSlugCategoria = async (slugCategoria) => {
       b.edad_minima,
       b.slug,
       b.icon_name,
-      b.url_beneficio,
+      
       b.id_categoria
     FROM beneficio b
     WHERE b.id_categoria = $1
@@ -97,7 +97,7 @@ export const obtenerBeneficioPorSlug = async (slug) => {
       b.slug,
       b.icon_name,
       b.id_categoria,
-      b.url_beneficio,
+      
       c.color_primary
     FROM beneficio b
     JOIN categoria c ON c.id_categoria = b.id_categoria
@@ -145,8 +145,8 @@ export const obtenerOrganismosPorSlugBeneficio = async (slugBeneficio) => {
       o.tipo,
       o.direccion,
       o.telefono,
-      ST_X(o.coordenadas) AS lng,
-      ST_Y(o.coordenadas) AS lat
+      ST_Y(o.coordenadas) AS lat,
+      ST_X(o.coordenadas) AS lng
     FROM beneficio b
     JOIN beneficio_organismo bo
       ON bo.id_beneficio = b.id_beneficio

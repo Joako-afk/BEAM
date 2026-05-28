@@ -1,13 +1,14 @@
 // src/pages/beneficio.jsx
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { MapPin, Download, ExternalLink, FileCheck, Maximize2, Minimize2 } from "lucide-react"; 
+import { MapPin, Download, ExternalLink, FileCheck, Maximize2, Minimize2 } from "lucide-react";
 
 import { generatePalette } from "../utils/generatePalette";
 import { formatTextAsList } from "../utils/textoalista.jsx";
 import InternalLayout from "../layouts/internal";
 import MapaBeneficio from "../components/mapaBeneficio.jsx";
 import { ButtonCard } from "../components/buttons.jsx"; // Mantenido como estaba
+import { exportBeneficioPdf } from "../utils/pdf.js";
 
 export default function Beneficio() {
   const { slug } = useParams();
@@ -173,8 +174,6 @@ export default function Beneficio() {
         ))}
       </div>
 
-
-
         {/* MAPA Y BOTONES */}
         <section className="max-w-5xl mx-auto mt-10 bg-white rounded-3xl p-6 sm:p-7 shadow-md border border-gray-100 break-inside-avoid">
           <h2 className="text-2xl font-bold uppercase mb-4" style={{ color: colors.primary }}>
@@ -218,7 +217,7 @@ export default function Beneficio() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-auto order-2 lg:order-3 print:hidden">
-                <ButtonCard text="Postular" icon={FileCheck} color={colors.secondary} disabled={true} />
+                <ButtonCard text="Contactar" icon={FileCheck} color={colors.secondary} href={'https://formulario.chileatiende.cl/formulario-web/cha'} />
                 <ButtonCard text="Saber más" icon={ExternalLink} color={colors.tertiary} href={urlSaberMas} disabled={!urlSaberMas} />
                 <ButtonCard text="Cómo llegar" icon={MapPin} color={colors.tertiary} href={sucursal ? `https://www.google.com/maps/dir/?api=1&destination=${sucursal.lat},${sucursal.lng}` : null} disabled={!sucursal} />
                 <ButtonCard text="Descargar" icon={Download} color={colors.secondary} 
