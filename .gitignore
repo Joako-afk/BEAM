@@ -32,6 +32,11 @@ frontend/.env
 .env.test
 
 # ============================
+#   OPENCODE (contiene credenciales)
+# ============================
+opencode.json
+
+# ============================
 #   LOG FILES
 # ============================
 logs/

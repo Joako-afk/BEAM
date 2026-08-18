@@ -7,6 +7,7 @@ import Inicio from "./pages/inicio";
 import Categoria from "./pages/categoria";
 import Login from "./pages/login";
 import Institucion from "./pages/institucion";
+import Configuraciones from "./pages/configuraciones";
 
 
 
@@ -30,6 +31,9 @@ export default function App() {
 
       {/* Login */}
       <Route path="/login" element={<Login />} />
+
+      {/* Panel de administración */}
+      <Route path="/configuraciones" element={<Configuraciones />} />
     </Routes>
   );
 }

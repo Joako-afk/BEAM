@@ -25,8 +25,12 @@ export default function Categoria() {
       : `http://localhost:4000/api/beneficios/categoria/${slug}`;
 
     fetch(endpoint)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
+        if (!data?.categoria?.color_primary) throw new Error("Invalid categoria data");
         const palette = generatePalette(data.categoria.color_primary);
 
         document.documentElement.style.setProperty("--primary", palette.primary);

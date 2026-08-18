@@ -160,3 +160,88 @@ export const obtenerOrganismosPorSlugBeneficio = async (slugBeneficio) => {
 
   return result.rows; // array de sucursales con lat/lng
 };
+
+/**
+ * Lista todos los beneficios (para admin).
+ */
+export const listarTodosLosBeneficios = async () => {
+  const result = await pool.query(
+    `
+    SELECT
+      b.id_beneficio,
+      b.nombre,
+      b.descripcion,
+      b.requisitos,
+      b.costo,
+      b.edad_minima,
+      b.slug,
+      b.icon_name,
+      b.id_categoria,
+      c.nombre AS categoria_nombre
+    FROM beneficio b
+    JOIN categoria c ON c.id_categoria = b.id_categoria
+    ORDER BY b.nombre ASC
+    `
+  );
+  return result.rows;
+};
+
+/**
+ * Crea un nuevo beneficio.
+ */
+export const crearBeneficio = async (nombre, descripcion, requisitos, costo, edad_minima, slug, icon_name, id_categoria) => {
+  const result = await pool.query(
+    `
+    INSERT INTO beneficio (nombre, descripcion, requisitos, costo, edad_minima, slug, icon_name, id_categoria)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    RETURNING *
+    `,
+    [nombre, descripcion, requisitos, costo, edad_minima, slug, icon_name, id_categoria]
+  );
+  return result.rows[0];
+};
+
+/**
+ * Actualiza un beneficio por su ID.
+ */
+export const actualizarBeneficio = async (id, nombre, descripcion, requisitos, costo, edad_minima, slug, icon_name, id_categoria) => {
+  const result = await pool.query(
+    `
+    UPDATE beneficio
+    SET nombre = $1, descripcion = $2, requisitos = $3, costo = $4, edad_minima = $5,
+        slug = $6, icon_name = $7, id_categoria = $8
+    WHERE id_beneficio = $9
+    RETURNING *
+    `,
+    [nombre, descripcion, requisitos, costo, edad_minima, slug, icon_name, id_categoria, id]
+  );
+  if (result.rowCount === 0) return null;
+  return result.rows[0];
+};
+
+/**
+ * Elimina un beneficio por su ID.
+ */
+export const eliminarBeneficio = async (id) => {
+  await pool.query(`DELETE FROM informacion_beneficio WHERE id_beneficio = $1`, [id]);
+  await pool.query(`DELETE FROM beneficio_organismo WHERE id_beneficio = $1`, [id]);
+  await pool.query(`DELETE FROM beneficio_comuna WHERE id_beneficio = $1`, [id]);
+  const result = await pool.query(
+    `DELETE FROM beneficio WHERE id_beneficio = $1 RETURNING id_beneficio`,
+    [id]
+  );
+  if (result.rowCount === 0) return null;
+  return result.rows[0];
+};
+
+/**
+ * Obtiene un beneficio por ID (para admin).
+ */
+export const obtenerBeneficioPorId = async (id) => {
+  const result = await pool.query(
+    `SELECT * FROM beneficio WHERE id_beneficio = $1`,
+    [id]
+  );
+  if (result.rowCount === 0) return null;
+  return result.rows[0];
+};
