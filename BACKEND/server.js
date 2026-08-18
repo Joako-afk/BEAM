@@ -7,6 +7,8 @@ import "./src/config/db.js";
 import categoriaRoutes from "./src/routes/categoriaRouter.js";
 import usuarioRoutes from "./src/routes/usuarioRoutes.js"; 
 import beneficioRoutes from "./src/routes/beneficioRoutes.js";
+import organismoRoutes from "./src/routes/organismoRoutes.js";
+import adminRoutes from "./src/routes/adminRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -18,6 +20,8 @@ const PORT = 4000;
 app.use("/api/categorias", categoriaRoutes);
 app.use("/api/usuarios", usuarioRoutes); 
 app.use("/api/beneficios", beneficioRoutes);
+app.use("/api/instituciones", organismoRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);

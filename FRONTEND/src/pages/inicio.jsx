@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
-import InfoPanel from "../components/infopanel";
+﻿import { useEffect, useState } from "react";
 import SearchBar from "../components/busqueda";
 import { generatePalette } from "../utils/generatePalette";
-import { cardCategoria} from "../components/card";
-
+import { cardCategoria } from "../components/card";
+import InstructionsPanel from "../components/instructionsPanel";
 
 export default function Inicio() {
   const [categorias, setCategorias] = useState([]);
@@ -34,34 +33,52 @@ export default function Inicio() {
   );
 
   return (
-    <div className="w-full flex flex-col items-center pt-28">
-      {/* Panel superior */}
-      <div className="-mt-3 w-full flex justify-center">
-        <InfoPanel
-          text="Aquí puedes encontrar las categorías disponibles de beneficios."
-          colors={{
-            primary: "#3e6a0f",
-            secondary: "#96c43f",
-            tertiary: "#c5f100",
-            text: "#000"
-          }}
-        />
+    <div className="w-full flex flex-col items-center pt-4">
+
+      {/* BLOQUE SUPERIOR: Instrucciones + Buscador */}
+      <div className="w-full max-w-6xl px-4 grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+        {/* Instrucciones */}
+        <div className="lg:col-span-1">
+          <InstructionsPanel
+            title="¿Cómo usar la plataforma?"
+            steps={[
+              "Utiliza la barra de búsqueda para encontrar una categoría.",
+              "Presiona una categoría para ver los beneficios disponibles.",
+              "Selecciona un beneficio para conocer requisitos y detalles.",
+            ]}
+          />
+        </div>
+
+        {/* Buscador (se mantiene igual) */}
+        <div className="lg:col-span-2 flex justify-center">
+          <SearchBar
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+        </div>
 
       </div>
 
-      {/* Barra de búsqueda */}
-      <SearchBar
-        value={busqueda}
-        onChange={(e) => setBusqueda(e.target.value)}
-      />
-
-      {/* Tarjetas de categorías */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-20 px-4 mt-8">
+      {/* GRID DE CATEGORÍAS */}
+      <div
+        className="
+          grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4
+          justify-items-center
+          gap-6 mb-20 px-4 mt-8 w-full max-w-6xl
+        "
+      >
         {filtradas.map((cat) => (
-          <div key={cat.id_categoria}>{cardCategoria(cat)}</div>
+          <div
+            key={cat.id_categoria}
+            className="h-full w-full max-w-[320px] sm:max-w-none"
+          >
+            {cardCategoria(cat)}
+          </div>
         ))}
       </div>
+
     </div>
   );
-}
 
+}

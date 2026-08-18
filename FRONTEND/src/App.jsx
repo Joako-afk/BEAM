@@ -1,36 +1,39 @@
 // FRONTEND/src/App.jsx
-import { Routes, Route } from "react-router-dom";
-
+import { Routes, Route, Router } from "react-router-dom";
+import Presentacion from "./pages/presentacion";
 import BasicLayout from "./layouts/basic";
 import Beneficio from "./pages/beneficio";
-import InternalLayout from "./layouts/internal";
 import Inicio from "./pages/inicio";
 import Categoria from "./pages/categoria";
 import Login from "./pages/login";
+import Institucion from "./pages/institucion";
+import Configuraciones from "./pages/configuraciones";
+
+
 
 export default function App() {
   return (
     <Routes>
       {/* Inicio */}
-      <Route
-        path="/"
-        element={
-          <BasicLayout>
-            <Inicio />
-          </BasicLayout>
-        }
-      />
+      <Route path="/" element={<BasicLayout> <Inicio /> </BasicLayout> }/>
 
       {/* Página dinámica de categoría */}
       <Route path="/categoria/:slug" element={<Categoria />} />
+      <Route path="/institucion/:slug" element={<Institucion />} />
+      <Route path="/presentacion" element={<Presentacion />} />
 
-      <Route
-        path="/beneficio/:slug"
-        element={<Beneficio />}
-      />
+
+      {/* Página dinámica de beneficio */}
+
+      <Route path="/beneficio/:slug" element={<Beneficio />} />
+
+
 
       {/* Login */}
       <Route path="/login" element={<Login />} />
+
+      {/* Panel de administración */}
+      <Route path="/configuraciones" element={<Configuraciones />} />
     </Routes>
   );
 }

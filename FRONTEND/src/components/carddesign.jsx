@@ -7,69 +7,65 @@ export default function CardDesign({
   lightColor,
   barColor,
   onClick,
-  iconFolder = "beneficios", // 👈 carpeta por defecto
+  iconFolder = "beneficios",
 }) {
   return (
     <div
       onClick={onClick}
       className="
-        block 
-        rounded-3xl 
-        overflow-hidden 
-        cursor-pointer 
-        shadow-lg 
-        transition-transform 
-        hover:scale-[1.03]
-        w-40 sm:w-52 md:w-56
+        block rounded-3xl overflow-hidden cursor-pointer shadow-lg
+        transition-transform hover:scale-[1.03]
+        w-full max-w-[15rem] h-full flex flex-col
+        justify-self-center
       "
       style={{ backgroundColor: color }}
     >
-      {/* PARTE SUPERIOR */}
+      {/* Parte superior */}
       <div
         className="
-          flex 
-          items-center 
-          justify-center 
-          m-4 
-          rounded-2xl
-          p-6
+          flex items-center justify-center
+          m-4 rounded-2xl
+          p-4 sm:p-5
+          aspect-square
         "
         style={{
           backgroundColor: lightColor,
-          border: `12px solid ${color}`,
+          border: `10px solid ${color}`,
         }}
       >
         <img
-          src={`/icons/${iconFolder}/${iconName}`}  
+          src={`/icons/${iconFolder}/${iconName}`}
           alt={title}
-          className="w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 object-contain"
           loading="lazy"
+          className={`
+            object-contain
+            w-28 h-28
+            sm:w-32 sm:h-32
+            md:w-36 md:h-36
+            lg:w-40 lg:h-40
+          `}
         />
+
+
       </div>
 
-      {/* FRANJA INFERIOR */}
+      {/* Franja inferior */}
       <div
         className="
-          flex 
-          items-center 
-          justify-center 
-          rounded-b-3xl
-          px-4 py-4
+          flex items-center justify-center
+          rounded-b-3xl px-4 py-3 sm:py-4
+          mt-auto h-24
         "
         style={{
           backgroundColor: barColor || color,
-          minHeight: "5rem",
         }}
       >
         <h2
           className="
-            font-semibold 
-            text-white 
-            text-center 
-            leading-normal
-            whitespace-normal
-            break-words
-            text-[18px] sm:text-[20px] md:text-[22px]
+            font-semibold text-white text-center leading-tight
+            whitespace-normal break-words
+            line-clamp-3
+            text-[18px] sm:text-[19px] md:text-[21px]
           "
         >
           {title}

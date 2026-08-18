@@ -1,6 +1,6 @@
 // src/components/card.jsx
 import { useNavigate } from "react-router-dom";
-import CardDesign from "../components/carddesign";
+import CardDesign from "./carddesign";
 
 // Componente interno para categoría
 function CategoriaCardComponent({ data }) {
@@ -13,29 +13,34 @@ function CategoriaCardComponent({ data }) {
       color={data.colors.primary}
       lightColor={data.colors.light}
       barColor={data.colors.secondary}
-      iconFolder="categorias"  // 👈 usa /icons/categorias/
+      iconFolder="categorias" 
       onClick={() => navigate(`/categoria/${data.slug}`)}
     />
   );
 }
 
-// Componente interno para beneficio
+// Componente interno para beneficio / institución
 function BeneficioCardComponent({ data }) {
   const navigate = useNavigate();
+
+  // Si viene logo_url => es institución (desde categoria.jsx tú lo seteas así)
+  const isInstitucion = !!data.logo_url;
 
   return (
     <CardDesign
       title={data.nombre}
-      iconName={data.icon_name || data.icon}
+      // si es institución usamos logo_url (o icon_name si ya lo copiaste ahí)
+      iconName={isInstitucion ? (data.logo_url) : (data.icon_name)}
       color={data.colors.primary}
       lightColor={data.colors.light}
       barColor={data.colors.secondary}
-      iconFolder="beneficios"  // 👈 usa /icons/beneficios/
-      // Usa onClick que viene desde Categoria.jsx si existe
+      iconFolder={isInstitucion ? "instituciones" : "beneficios"}
+
       onClick={data.onClick || (() => navigate(`/beneficio/${data.slug}`))}
     />
   );
 }
+
 
 // FUNCIONES que devuelven el componente (como ya lo usas en inicio.jsx y categoria.jsx)
 export function cardCategoria(data) {

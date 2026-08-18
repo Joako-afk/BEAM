@@ -13,7 +13,7 @@ export default function BasicLayout({ children }) {
     large: "text-lg",
   };
 
-  // 🎨 Tema ahora controla TODO el fondo
+  // Tema ahora controla TODO el fondo
   const themeClasses = {
     light: "bg-[#f4f8e4] text-gray-900", // verde claro
     dark: "bg-gray-900 text-gray-100",  // dark mode real
