@@ -212,16 +212,16 @@ export const eliminarOrganismo = async (id) => {
 
 // ===== INFORMACION CRUD =====
 
-export const obtenerTodaLaInformacion = async () => {
+export const obtenerInformacionPorBeneficio = async (idBeneficio) => {
   const result = await pool.query(
     `
-    SELECT i.id_info, i.bloque, i.nombre, i.contenido,
-           ib.id_beneficio, b.nombre AS beneficio_nombre
+    SELECT i.id_info, i.bloque, i.nombre, i.contenido
     FROM informacion i
-    LEFT JOIN informacion_beneficio ib ON ib.id_info = i.id_info
-    LEFT JOIN beneficio b ON b.id_beneficio = ib.id_beneficio
+    JOIN informacion_beneficio ib ON ib.id_info = i.id_info
+    WHERE ib.id_beneficio = $1
     ORDER BY i.bloque ASC, i.id_info ASC
-    `
+    `,
+    [idBeneficio]
   );
   return result.rows;
 };

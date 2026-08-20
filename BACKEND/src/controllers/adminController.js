@@ -21,7 +21,7 @@ import {
   crearOrganismo,
   actualizarOrganismo,
   eliminarOrganismo,
-  obtenerTodaLaInformacion,
+  obtenerInformacionPorBeneficio,
   crearInformacion,
   actualizarInformacion,
   eliminarInformacion,
@@ -257,7 +257,8 @@ export const adminEliminarOrganismo = async (req, res) => {
 
 export const adminListarInformacion = async (req, res) => {
   try {
-    const informacion = await obtenerTodaLaInformacion();
+    const { id_beneficio } = req.query;
+    const informacion = await obtenerInformacionPorBeneficio(id_beneficio);
     res.json(informacion);
   } catch (error) {
     console.error("Error admin listar información:", error);
