@@ -23,14 +23,6 @@ El proyecto implementa reglas específicas para personas mayores:
 4. **Postulación y Contacto:** Llamadas directas a organismos, formularios de postulación
 5. **Panel de Administración:** Acceso seguro (bcrypt) para gestores
 
-## Stack
-- **Lenguaje:** JavaScript (ESM en todo el proyecto)
-- **Backend:** Node.js + Express 5
-- **Frontend:** React 19 + Vite 7 + Tailwind CSS 4
-- **Base de datos:** PostgreSQL con extensión PostGIS
-- **Tests:** Playwright (E2E testing), Vitest (unit tests), axe-core (accessibility)
-- **Otros:** Leaflet (mapas), bcrypt (auth), lucide-react (iconos)
-
 ## Comandos
 
 ### Backend (`BACKEND/`)
@@ -75,7 +67,6 @@ Ejecutar: `lint -> build -> test` (frontend). El backend no tiene lint ni tests 
 
 ## Convenciones
 - **ESM en todo:** todos los archivos usan `import`/`export`, no `require()`
-- **Patrón MVC sin frameworks:** controllers exportan funciones async, models ejecutan SQL crudo con `pool.query()` (no se usa ORM como Prisma o Sequelize)
 - **Slugs para rutas:** las URLs usan slugs (`/beneficio/:slug`), no IDs numéricos
 - **Tailwind CSS 4:** usa `@import "tailwindcss"` en CSS (sintaxis v4, no v3)
 - **CSS variables para temas:** colores controlados via `--primary`, `--secondary`, `--tertiary`, etc. en `:root`
@@ -93,19 +84,14 @@ Ejecutar: `lint -> build -> test` (frontend). El backend no tiene lint ni tests 
 ## No hagas
 - **No toques `.env`:** contienen credenciales reales de PostgreSQL y URLs de API. Ya están en `.gitignore`
 - **No instales dependencias sin preguntar:** los `package.json` son estables
-- **No uses CommonJS:** todo el proyecto es ESM (`"type": "module"` en frontend, `import` en backend)
-- **No uses ORM:** los models usan SQL crudo con `pool.query()` — mantener esa convención
-- **No ignores PostGIS:** la tabla `ORGANISMO` usa `GEOMETRY(Point, 4326)` — las queries geoespaciales son parte central del sistema
 - **No subas nunca archivos `.env`, `Proyecto.sql` ni `node_modules/`**
 
 ## Flujo de trabajo
 - Antes de una tarea no trivial, propón un plan y espera mi OK.
 - Una tarea a la vez; al terminar, dime qué cambiaste para que lo revise.
 - Si no estás seguro al 80%, pregunta. No inventes.
-- Cada paquete (`BACKEND/`, `FRONTEND/`) se instala y ejecuta por separado — no hay script raíz
 
 ## Documentación
-- `BACKEND/` y `FRONTEND/` son paquetes independientes — no existe `npm install` raíz
 - El esquema de BD completo está en `BD/Proyecto.sql` — léelo antes de tocar modelos o crear migraciones
 - El frontend hardcodea `http://localhost:4000/api/...` en algunos componentes (verificar antes de cambiar puertos)
 
