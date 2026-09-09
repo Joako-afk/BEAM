@@ -5,12 +5,18 @@ import {
   crearCategoria,
   actualizarCategoria,
   eliminarCategoria,
+  buscarCategorias,
+  contarBeneficiosPorCategoria,
 } from "../models/categoriaModel.js";
 import {
   listarTodosLosBeneficios,
   crearBeneficio,
   actualizarBeneficio,
   eliminarBeneficio,
+  buscarBeneficios,
+  contarRelacionesBeneficio,
+  crearBeneficioTransaccion,
+  editarBeneficioTransaccion,
 } from "../models/beneficioModel.js";
 import {
   obtenerTodasLasInstitucionesAdmin,
@@ -26,14 +32,38 @@ import {
   actualizarInformacion,
   eliminarInformacion,
   obtenerTerritorios,
+  crearTerritorio,
+  actualizarTerritorio,
+  eliminarTerritorio,
+  contarComunasPorRegion,
+  eliminarComunasPorRegion,
+  contarRelacionesComuna,
+  eliminarRelacionesComuna,
+  buscarInstituciones,
+  contarOrganismosPorInstitucion,
+  buscarOrganismos,
+  validarDuplicadoOrganismo,
+  buscarTerritorios,
 } from "../models/organismoModel.js";
+import {
+  obtenerTodosLosEventos,
+  crearEvento,
+  actualizarEvento,
+  eliminarEvento,
+  contarOrganismosPorEvento,
+  eliminarOrganismosPorEvento,
+  buscarEventos,
+} from "../models/eventoModel.js";
+
+const PAGE_SIZE = 20;
 
 // ========== CATEGORÍAS ==========
 
 export const adminListarCategorias = async (req, res) => {
   try {
-    const categorias = await obtenerCategorias();
-    res.json(categorias);
+    const { search, page = 1 } = req.query;
+    const result = await buscarCategorias(search || "", Number(page), PAGE_SIZE);
+    res.json(result);
   } catch (error) {
     console.error("Error admin listar categorías:", error);
     res.status(500).json({ error: "Error al obtener categorías" });
@@ -73,6 +103,12 @@ export const adminActualizarCategoria = async (req, res) => {
 export const adminEliminarCategoria = async (req, res) => {
   try {
     const { id } = req.params;
+    const beneficios = await contarBeneficiosPorCategoria(id);
+    if (beneficios > 0) {
+      return res.status(409).json({
+        error: `No se puede eliminar la categoría porque tiene ${beneficios} beneficio(s) asignado(s). Reasigne los beneficios a otra categoría antes de eliminar.`,
+      });
+    }
     const eliminada = await eliminarCategoria(id);
     if (!eliminada) return res.status(404).json({ error: "Categoría no encontrada" });
     res.json({ mensaje: "Categoría eliminada" });
@@ -86,8 +122,9 @@ export const adminEliminarCategoria = async (req, res) => {
 
 export const adminListarBeneficios = async (req, res) => {
   try {
-    const beneficios = await listarTodosLosBeneficios();
-    res.json(beneficios);
+    const { search, page = 1 } = req.query;
+    const result = await buscarBeneficios(search || "", Number(page), PAGE_SIZE);
+    res.json(result);
   } catch (error) {
     console.error("Error admin listar beneficios:", error);
     res.status(500).json({ error: "Error al obtener beneficios" });
@@ -96,16 +133,16 @@ export const adminListarBeneficios = async (req, res) => {
 
 export const adminCrearBeneficio = async (req, res) => {
   try {
-    const { nombre, descripcion, requisitos, costo, edad_minima, icon_name, id_categoria } = req.body;
+    const { nombre, descripcion, requisitos, costo, edad_minima, icon_name, id_categoria, comunas, organismos, info_bloques } = req.body;
     if (!nombre || !id_categoria) {
       return res.status(400).json({ error: "Nombre y categoría son obligatorios" });
     }
 
     const slug = slugify(nombre);
-    const beneficio = await crearBeneficio(
-      nombre, descripcion, requisitos, costo || 0, edad_minima || 0,
-      slug, icon_name, id_categoria
-    );
+    const beneficio = await crearBeneficioTransaccion({
+      nombre, descripcion, requisitos, costo, edad_minima, slug, icon_name, id_categoria,
+      comunas, organismos, info_bloques,
+    });
     res.status(201).json(beneficio);
   } catch (error) {
     console.error("Error admin crear beneficio:", error);
@@ -116,16 +153,16 @@ export const adminCrearBeneficio = async (req, res) => {
 export const adminActualizarBeneficio = async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, descripcion, requisitos, costo, edad_minima, icon_name, id_categoria } = req.body;
+    const { nombre, descripcion, requisitos, costo, edad_minima, icon_name, id_categoria, comunas, organismos, info_bloques } = req.body;
     if (!nombre || !id_categoria) {
       return res.status(400).json({ error: "Nombre y categoría son obligatorios" });
     }
 
     const slug = slugify(nombre);
-    const beneficio = await actualizarBeneficio(
-      id, nombre, descripcion, requisitos, costo, edad_minima,
-      slug, icon_name, id_categoria
-    );
+    const beneficio = await editarBeneficioTransaccion(id, {
+      nombre, descripcion, requisitos, costo, edad_minima, slug, icon_name, id_categoria,
+      comunas, organismos, info_bloques,
+    });
     if (!beneficio) return res.status(404).json({ error: "Beneficio no encontrado" });
     res.json(beneficio);
   } catch (error) {
@@ -137,6 +174,14 @@ export const adminActualizarBeneficio = async (req, res) => {
 export const adminEliminarBeneficio = async (req, res) => {
   try {
     const { id } = req.params;
+    const relaciones = await contarRelacionesBeneficio(id);
+    const total = relaciones.comunas + relaciones.organismos + relaciones.bloques_info;
+    if (total > 0) {
+      return res.status(409).json({
+        error: `Este beneficio tiene ${relaciones.comunas} comuna(s), ${relaciones.organismos} organismo(s) y ${relaciones.bloques_info} bloque(s) de información asociados. ¿Está seguro de eliminarlo? Se eliminarán todas las relaciones.`,
+        relaciones,
+      });
+    }
     const eliminado = await eliminarBeneficio(id);
     if (!eliminado) return res.status(404).json({ error: "Beneficio no encontrado" });
     res.json({ mensaje: "Beneficio eliminado" });
@@ -150,8 +195,9 @@ export const adminEliminarBeneficio = async (req, res) => {
 
 export const adminListarInstituciones = async (req, res) => {
   try {
-    const instituciones = await obtenerTodasLasInstitucionesAdmin();
-    res.json(instituciones);
+    const { search, page = 1 } = req.query;
+    const result = await buscarInstituciones(search || "", Number(page), PAGE_SIZE);
+    res.json(result);
   } catch (error) {
     console.error("Error admin listar instituciones:", error);
     res.status(500).json({ error: "Error al obtener instituciones" });
@@ -191,6 +237,12 @@ export const adminActualizarInstitucion = async (req, res) => {
 export const adminEliminarInstitucion = async (req, res) => {
   try {
     const { id } = req.params;
+    const organismos = await contarOrganismosPorInstitucion(id);
+    if (organismos > 0) {
+      return res.status(409).json({
+        error: `Esta institución tiene ${organismos} organismo(s) asociado(s). ¿Está seguro de eliminarla? Se eliminarán la institución y todos sus organismos.`,
+      });
+    }
     const eliminada = await eliminarInstitucion(id);
     if (!eliminada) return res.status(404).json({ error: "Institución no encontrada" });
     res.json({ mensaje: "Institución eliminada" });
@@ -204,8 +256,9 @@ export const adminEliminarInstitucion = async (req, res) => {
 
 export const adminListarOrganismos = async (req, res) => {
   try {
-    const organismos = await obtenerTodosLosOrganismos();
-    res.json(organismos);
+    const { search, page = 1 } = req.query;
+    const result = await buscarOrganismos(search || "", Number(page), PAGE_SIZE);
+    res.json(result);
   } catch (error) {
     console.error("Error admin listar organismos:", error);
     res.status(500).json({ error: "Error al obtener organismos" });
@@ -217,6 +270,13 @@ export const adminCrearOrganismo = async (req, res) => {
     const { nombre_sucursal, tipo, direccion, telefono, lng, lat, id_institucion, id_divter } = req.body;
     if (!nombre_sucursal) return res.status(400).json({ error: "El nombre de la sucursal es obligatorio" });
     if (lng == null || lat == null) return res.status(400).json({ error: "Las coordenadas son obligatorias" });
+
+    if (id_divter) {
+      const duplicado = await validarDuplicadoOrganismo(nombre_sucursal, id_divter);
+      if (duplicado) {
+        return res.status(409).json({ error: `Ya existe un organismo con el nombre "${nombre_sucursal}" en esta comuna. Elija un nombre diferente.` });
+      }
+    }
 
     const organismo = await crearOrganismo(nombre_sucursal, tipo, direccion, telefono, lng, lat, id_institucion, id_divter);
     res.status(201).json(organismo);
@@ -231,6 +291,13 @@ export const adminActualizarOrganismo = async (req, res) => {
     const { id } = req.params;
     const { nombre_sucursal, tipo, direccion, telefono, lng, lat, id_institucion, id_divter } = req.body;
     if (!nombre_sucursal) return res.status(400).json({ error: "El nombre de la sucursal es obligatorio" });
+
+    if (id_divter) {
+      const duplicado = await validarDuplicadoOrganismo(nombre_sucursal, id_divter, id);
+      if (duplicado) {
+        return res.status(409).json({ error: `Ya existe un organismo con el nombre "${nombre_sucursal}" en esta comuna. Elija un nombre diferente.` });
+      }
+    }
 
     const organismo = await actualizarOrganismo(id, nombre_sucursal, tipo, direccion, telefono, lng, lat, id_institucion, id_divter);
     if (!organismo) return res.status(404).json({ error: "Organismo no encontrado" });
@@ -309,14 +376,143 @@ export const adminEliminarInformacion = async (req, res) => {
   }
 };
 
-// ========== UTILIDADES ==========
+// ========== TERRITORIOS ==========
 
 export const adminListarTerritorios = async (req, res) => {
   try {
-    const territorios = await obtenerTerritorios();
-    res.json(territorios);
+    const { search, page = 1 } = req.query;
+    const result = await buscarTerritorios(search || "", Number(page), PAGE_SIZE);
+    res.json(result);
   } catch (error) {
     console.error("Error admin listar territorios:", error);
     res.status(500).json({ error: "Error al obtener territorios" });
+  }
+};
+
+export const adminCrearTerritorio = async (req, res) => {
+  try {
+    const { nombre, tipo, id_padre } = req.body;
+    if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
+    if (!tipo) return res.status(400).json({ error: "El tipo es obligatorio" });
+
+    const tipoUpper = tipo.toUpperCase();
+    if (tipoUpper !== "REGION" && tipoUpper !== "COMUNA") {
+      return res.status(400).json({ error: "El tipo debe ser 'Region' o 'Comuna'" });
+    }
+
+    if (tipoUpper === "COMUNA" && !id_padre) {
+      return res.status(400).json({ error: "Las comunas deben tener una región padre" });
+    }
+    if (tipoUpper === "REGION" && id_padre) {
+      return res.status(400).json({ error: "Las regiones no deben tener padre" });
+    }
+
+    const territorio = await crearTerritorio(nombre, tipoUpper, id_padre);
+    res.status(201).json(territorio);
+  } catch (error) {
+    console.error("Error admin crear territorio:", error);
+    res.status(500).json({ error: "Error al crear territorio" });
+  }
+};
+
+export const adminActualizarTerritorio = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre } = req.body;
+    if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
+
+    const territorio = await actualizarTerritorio(id, nombre);
+    if (!territorio) return res.status(404).json({ error: "Territorio no encontrado" });
+    res.json(territorio);
+  } catch (error) {
+    console.error("Error admin actualizar territorio:", error);
+    res.status(500).json({ error: "Error al actualizar territorio" });
+  }
+};
+
+export const adminEliminarTerritorio = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const territorio = await obtenerTerritorios().then(t => t.find(t => t.id_divter === Number(id)));
+    if (!territorio) return res.status(404).json({ error: "Territorio no encontrado" });
+
+    if (territorio.tipo === "REGION") {
+      const comunas = await contarComunasPorRegion(id);
+      if (comunas > 0) {
+        await eliminarComunasPorRegion(id);
+      }
+    } else {
+      const relaciones = await contarRelacionesComuna(id);
+      if (relaciones.beneficios > 0 || relaciones.organismos > 0) {
+        await eliminarRelacionesComuna(id);
+      }
+    }
+
+    const eliminado = await eliminarTerritorio(id);
+    if (!eliminado) return res.status(404).json({ error: "Territorio no encontrado" });
+    res.json({ mensaje: "Territorio eliminado" });
+  } catch (error) {
+    console.error("Error admin eliminar territorio:", error);
+    res.status(500).json({ error: "Error al eliminar territorio" });
+  }
+};
+
+// ========== EVENTOS ==========
+
+export const adminListarEventos = async (req, res) => {
+  try {
+    const { search, page = 1 } = req.query;
+    const result = await buscarEventos(search || "", Number(page), PAGE_SIZE);
+    res.json(result);
+  } catch (error) {
+    console.error("Error admin listar eventos:", error);
+    res.status(500).json({ error: "Error al obtener eventos" });
+  }
+};
+
+export const adminCrearEvento = async (req, res) => {
+  try {
+    const { nombre, descripcion, fecha } = req.body;
+    if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
+    if (!fecha) return res.status(400).json({ error: "La fecha es obligatoria" });
+
+    const evento = await crearEvento(nombre, descripcion, fecha);
+    res.status(201).json(evento);
+  } catch (error) {
+    console.error("Error admin crear evento:", error);
+    res.status(500).json({ error: "Error al crear evento" });
+  }
+};
+
+export const adminActualizarEvento = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { nombre, descripcion, fecha } = req.body;
+    if (!nombre) return res.status(400).json({ error: "El nombre es obligatorio" });
+    if (!fecha) return res.status(400).json({ error: "La fecha es obligatoria" });
+
+    const evento = await actualizarEvento(id, nombre, descripcion, fecha);
+    if (!evento) return res.status(404).json({ error: "Evento no encontrado" });
+    res.json(evento);
+  } catch (error) {
+    console.error("Error admin actualizar evento:", error);
+    res.status(500).json({ error: "Error al actualizar evento" });
+  }
+};
+
+export const adminEliminarEvento = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const organismos = await contarOrganismosPorEvento(id);
+    if (organismos > 0) {
+      await eliminarOrganismosPorEvento(id);
+    }
+    const eliminado = await eliminarEvento(id);
+    if (!eliminado) return res.status(404).json({ error: "Evento no encontrado" });
+    res.json({ mensaje: "Evento eliminado" });
+  } catch (error) {
+    console.error("Error admin eliminar evento:", error);
+    res.status(500).json({ error: "Error al eliminar evento" });
   }
 };

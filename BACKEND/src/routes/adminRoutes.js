@@ -22,6 +22,13 @@ import {
   adminActualizarInformacion,
   adminEliminarInformacion,
   adminListarTerritorios,
+  adminCrearTerritorio,
+  adminActualizarTerritorio,
+  adminEliminarTerritorio,
+  adminListarEventos,
+  adminCrearEvento,
+  adminActualizarEvento,
+  adminEliminarEvento,
 } from "../controllers/adminController.js";
 
 const router = Router();
@@ -56,7 +63,16 @@ router.post("/informacion", adminCrearInformacion);
 router.put("/informacion/:id", adminActualizarInformacion);
 router.delete("/informacion/:id", adminEliminarInformacion);
 
-// Utilidades
+// Territorios
 router.get("/territorios", adminListarTerritorios);
+router.post("/territorios", adminCrearTerritorio);
+router.put("/territorios/:id", adminActualizarTerritorio);
+router.delete("/territorios/:id", adminEliminarTerritorio);
+
+// Eventos
+router.get("/eventos", adminListarEventos);
+router.post("/eventos", adminCrearEvento);
+router.put("/eventos/:id", adminActualizarEvento);
+router.delete("/eventos/:id", adminEliminarEvento);
 
 export default router;

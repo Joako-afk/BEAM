@@ -5,7 +5,7 @@ function slugify(text) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/[^a-z0-9()]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
 
@@ -43,5 +43,10 @@ describe('slugify', () => {
     expect(slugify('Examen Médico Preventivo del Adulto Mayor')).toBe(
       'examen-medico-preventivo-del-adulto-mayor'
     );
+  });
+
+  it('debe conservar paréntesis', () => {
+    expect(slugify('Examen Médico (EMPAM)')).toBe('examen-medico-(empam)');
+    expect(slugify('Programa (VI) de Salud')).toBe('programa-(vi)-de-salud');
   });
 });

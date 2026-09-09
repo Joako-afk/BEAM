@@ -278,3 +278,185 @@ export const obtenerTerritorios = async () => {
   return result.rows;
 };
 
+export const crearTerritorio = async (nombre, tipo, idPadre) => {
+  const result = await pool.query(
+    `INSERT INTO division_territorial (nombre, tipo, id_padre)
+     VALUES ($1, $2, $3)
+     RETURNING id_divter, nombre, tipo, id_padre`,
+    [nombre, tipo, idPadre || null]
+  );
+  return result.rows[0];
+};
+
+export const actualizarTerritorio = async (id, nombre) => {
+  const result = await pool.query(
+    `UPDATE division_territorial
+     SET nombre = $1
+     WHERE id_divter = $2
+     RETURNING id_divter, nombre, tipo, id_padre`,
+    [nombre, id]
+  );
+  if (result.rowCount === 0) return null;
+  return result.rows[0];
+};
+
+export const eliminarTerritorio = async (id) => {
+  const result = await pool.query(
+    `DELETE FROM division_territorial WHERE id_divter = $1 RETURNING id_divter`,
+    [id]
+  );
+  if (result.rowCount === 0) return null;
+  return true;
+};
+
+export const contarComunasPorRegion = async (idRegion) => {
+  const result = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM division_territorial WHERE id_padre = $1",
+    [idRegion]
+  );
+  return result.rows[0].total;
+};
+
+export const eliminarComunasPorRegion = async (idRegion) => {
+  await pool.query(
+    "DELETE FROM division_territorial WHERE id_padre = $1",
+    [idRegion]
+  );
+};
+
+export const contarRelacionesComuna = async (idComuna) => {
+  const beneficios = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM beneficio_comuna WHERE id_divter = $1",
+    [idComuna]
+  );
+  const organismos = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM organismo WHERE id_divter = $1",
+    [idComuna]
+  );
+  return {
+    beneficios: beneficios.rows[0].total,
+    organismos: organismos.rows[0].total,
+  };
+};
+
+export const eliminarRelacionesComuna = async (idComuna) => {
+  await pool.query("DELETE FROM beneficio_comuna WHERE id_divter = $1", [idComuna]);
+  await pool.query("UPDATE organismo SET id_divter = NULL WHERE id_divter = $1", [idComuna]);
+};
+
+// ===== BÚSQUEDA Y PAGINACIÓN =====
+
+export const buscarInstituciones = async (search, page, limit) => {
+  const offset = (page - 1) * limit;
+  const term = `%${search}%`;
+  const where = search ? "WHERE i.nombre ILIKE $1 OR i.descripcion ILIKE $2" : "";
+  const params = search ? [term, term, limit, offset] : [limit, offset];
+
+  const countResult = await pool.query(
+    `SELECT COUNT(*)::int AS total FROM institucion i ${where}`,
+    search ? [term, term] : []
+  );
+
+  const result = await pool.query(
+    `
+    SELECT i.id_institucion, i.nombre, i.descripcion, i.pagina_web, i.logo_url,
+           i.email_contacto, i.slug, i.id_categoria, c.nombre AS categoria_nombre
+    FROM institucion i
+    LEFT JOIN categoria c ON c.id_categoria = i.id_categoria
+    ${where}
+    ORDER BY i.nombre ASC
+    LIMIT $${search ? 3 : 1} OFFSET $${search ? 4 : 2}
+    `,
+    params
+  );
+
+  return {
+    data: result.rows,
+    total: countResult.rows[0].total,
+    page,
+    totalPages: Math.ceil(countResult.rows[0].total / limit),
+  };
+};
+
+export const contarOrganismosPorInstitucion = async (idInstitucion) => {
+  const result = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM organismo WHERE id_institucion = $1",
+    [idInstitucion]
+  );
+  return result.rows[0].total;
+};
+
+export const buscarOrganismos = async (search, page, limit) => {
+  const offset = (page - 1) * limit;
+  const term = `%${search}%`;
+  const where = search ? "WHERE o.nombre_sucursal ILIKE $1 OR o.direccion ILIKE $2" : "";
+  const params = search ? [term, term, limit, offset] : [limit, offset];
+
+  const countResult = await pool.query(
+    `SELECT COUNT(*)::int AS total FROM organismo o ${where}`,
+    search ? [term, term] : []
+  );
+
+  const result = await pool.query(
+    `
+    SELECT o.id_organismo, o.nombre_sucursal, o.tipo, o.direccion, o.telefono,
+           ST_X(o.coordenadas) AS lng, ST_Y(o.coordenadas) AS lat,
+           o.id_institucion, o.id_divter, i.nombre AS institucion_nombre
+    FROM organismo o
+    LEFT JOIN institucion i ON i.id_institucion = o.id_institucion
+    ${where}
+    ORDER BY o.nombre_sucursal ASC
+    LIMIT $${search ? 3 : 1} OFFSET $${search ? 4 : 2}
+    `,
+    params
+  );
+
+  return {
+    data: result.rows,
+    total: countResult.rows[0].total,
+    page,
+    totalPages: Math.ceil(countResult.rows[0].total / limit),
+  };
+};
+
+export const validarDuplicadoOrganismo = async (nombre_sucursal, id_divter, id_excluir) => {
+  let query = "SELECT COUNT(*)::int AS total FROM organismo WHERE nombre_sucursal = $1 AND id_divter = $2";
+  const params = [nombre_sucursal, id_divter];
+  if (id_excluir) {
+    query += " AND id_organismo != $3";
+    params.push(id_excluir);
+  }
+  const result = await pool.query(query, params);
+  return result.rows[0].total > 0;
+};
+
+export const buscarTerritorios = async (search, page, limit) => {
+  const offset = (page - 1) * limit;
+  const term = `%${search}%`;
+  const where = search ? "WHERE nombre ILIKE $1" : "";
+  const params = search ? [term, limit, offset] : [limit, offset];
+
+  const countResult = await pool.query(
+    `SELECT COUNT(*)::int AS total FROM division_territorial ${where}`,
+    search ? [term] : []
+  );
+
+  const result = await pool.query(
+    `
+    SELECT id_divter, nombre, tipo, id_padre
+    FROM division_territorial
+    ${where}
+    ORDER BY tipo, nombre
+    LIMIT $${search ? 2 : 1} OFFSET $${search ? 3 : 2}
+    `,
+    params
+  );
+
+  return {
+    data: result.rows,
+    total: countResult.rows[0].total,
+    page,
+    totalPages: Math.ceil(countResult.rows[0].total / limit),
+  };
+};
+

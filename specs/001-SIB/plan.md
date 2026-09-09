@@ -202,42 +202,34 @@ try {
 
 ---
 
-## Tarea 8 — Frontend: Mejoras al panel admin
+## Tarea 8 — Frontend: Mejoras al panel admin ✅ COMPLETADA
 
-**Archivo:** `FRONTEND/src/pages/configuraciones.jsx`
+**Archivos modificados:** `configuraciones.jsx`, `BeneficioForm.jsx`
 
-### Búsqueda en tiempo real
+### Búsqueda en tiempo real ✅
 - Input de búsqueda por encima de cada listado
 - Debounce de 300ms antes de enviar al backend
 - Query param: `?search=valor`
 - Clear button para borrar búsqueda
 
-### Paginación
+### Paginación ✅
 - Controles al final de cada listado: ← Anterior | Página X de Y | Siguiente →
 - Mostrar "Mostrando X-Y de Z registros"
 - Deshabilitar Anterior en página 1, Siguiente en última página
 
-### Estados vacíos
+### Estados vacíos ✅
 - Sin registros: "No hay [entidades] registradas"
 - Sin resultados de búsqueda: "No se encontraron resultados"
 
-### Eliminación con desglose de cascada
-- Modal de confirmación: "Este [entidad] tiene X [relaciones] asociados. ¿Está seguro?"
+### Eliminación con desglose de cascada ✅
+- Modal de confirmación con error de cascada del backend
 - Botones: "Sí, eliminar" / "Cancelar"
-- Si no tiene relaciones: "¿Está seguro de eliminar [entidad] [nombre]?"
 
-### Formulario de beneficio mejorado
-- Debajo de los campos básicos, agregar sección "Comunas" con:
-  - Checkbox list con búsqueda
-  - Mensaje "No hay comunas disponibles" si no existen
-- Sección "Organismos" con:
-  - Checkbox list con búsqueda por NOMBRE_SUCURSAL o DIRECCION
-  - Mensaje "No hay organismos disponibles" si no existen
-- Sección "Información Extra" con:
-  - Lista de bloques (NOMBRE + CONTENIDO) con botón "Agregar bloque"
-  - Cada bloque tiene botón de eliminar
-  - Sin límite máximo de bloques
-- Validación: si no hay al menos una comuna o un organismo seleccionado, bloquear guardado con error
+### Formulario de beneficio mejorado ✅
+- Sección "Comunas" con checkbox list con búsqueda
+- Sección "Organismos" con checkbox list con búsqueda
+- Sección "Información Extra" con bloques dinámicos (NOMBRE + CONTENIDO)
+- Sin límite máximo de bloques
 
 ---
 

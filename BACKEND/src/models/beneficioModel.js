@@ -245,3 +245,196 @@ export const obtenerBeneficioPorId = async (id) => {
   if (result.rowCount === 0) return null;
   return result.rows[0];
 };
+
+/**
+ * Crea un beneficio con todas sus relaciones en una transacción.
+ * comunas: [id_divter, ...]
+ * organismos: [id_organismo, ...]
+ * info_bloques: [{nombre, contenido}, ...]
+ */
+export const crearBeneficioTransaccion = async (data) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const slugResult = await client.query(
+      `INSERT INTO beneficio (nombre, descripcion, requisitos, costo, edad_minima, slug, icon_name, id_categoria)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [data.nombre, data.descripcion, data.requisitos, data.costo || 0, data.edad_minima || 0, data.slug, data.icon_name, data.id_categoria]
+    );
+    const beneficio = slugResult.rows[0];
+
+    if (data.comunas && data.comunas.length > 0) {
+      for (const idDivter of data.comunas) {
+        await client.query(
+          "INSERT INTO beneficio_comuna (id_beneficio, id_divter) VALUES ($1, $2)",
+          [beneficio.id_beneficio, idDivter]
+        );
+      }
+    }
+
+    if (data.organismos && data.organismos.length > 0) {
+      for (const idOrganismo of data.organismos) {
+        await client.query(
+          "INSERT INTO beneficio_organismo (id_beneficio, id_organismo) VALUES ($1, $2)",
+          [beneficio.id_beneficio, idOrganismo]
+        );
+      }
+    }
+
+    if (data.info_bloques && data.info_bloques.length > 0) {
+      for (let i = 0; i < data.info_bloques.length; i++) {
+        const bloque = data.info_bloques[i];
+        const infoResult = await client.query(
+          "INSERT INTO informacion (bloque, nombre, contenido) VALUES ($1, $2, $3) RETURNING id_info",
+          [i + 1, bloque.nombre, bloque.contenido]
+        );
+        await client.query(
+          "INSERT INTO informacion_beneficio (id_info, id_beneficio) VALUES ($1, $2)",
+          [infoResult.rows[0].id_info, beneficio.id_beneficio]
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+    return beneficio;
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+};
+
+/**
+ * Edita un beneficio y reemplaza todas sus relaciones en una transacción.
+ */
+export const editarBeneficioTransaccion = async (id, data) => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const result = await client.query(
+      `UPDATE beneficio
+       SET nombre = $1, descripcion = $2, requisitos = $3, costo = $4, edad_minima = $5,
+           slug = $6, icon_name = $7, id_categoria = $8
+       WHERE id_beneficio = $9
+       RETURNING *`,
+      [data.nombre, data.descripcion, data.requisitos, data.costo, data.edad_minima, data.slug, data.icon_name, data.id_categoria, id]
+    );
+    if (result.rowCount === 0) {
+      await client.query("ROLLBACK");
+      return null;
+    }
+    const beneficio = result.rows[0];
+
+    await client.query("DELETE FROM beneficio_comuna WHERE id_beneficio = $1", [id]);
+    if (data.comunas && data.comunas.length > 0) {
+      for (const idDivter of data.comunas) {
+        await client.query(
+          "INSERT INTO beneficio_comuna (id_beneficio, id_divter) VALUES ($1, $2)",
+          [id, idDivter]
+        );
+      }
+    }
+
+    await client.query("DELETE FROM beneficio_organismo WHERE id_beneficio = $1", [id]);
+    if (data.organismos && data.organismos.length > 0) {
+      for (const idOrganismo of data.organismos) {
+        await client.query(
+          "INSERT INTO beneficio_organismo (id_beneficio, id_organismo) VALUES ($1, $2)",
+          [id, idOrganismo]
+        );
+      }
+    }
+
+    const infoVieja = await client.query(
+      "SELECT id_info FROM informacion_beneficio WHERE id_beneficio = $1", [id]
+    );
+    await client.query("DELETE FROM informacion_beneficio WHERE id_beneficio = $1", [id]);
+    for (const row of infoVieja.rows) {
+      await client.query("DELETE FROM informacion WHERE id_info = $1", [row.id_info]);
+    }
+
+    if (data.info_bloques && data.info_bloques.length > 0) {
+      for (let i = 0; i < data.info_bloques.length; i++) {
+        const bloque = data.info_bloques[i];
+        const infoResult = await client.query(
+          "INSERT INTO informacion (bloque, nombre, contenido) VALUES ($1, $2, $3) RETURNING id_info",
+          [i + 1, bloque.nombre, bloque.contenido]
+        );
+        await client.query(
+          "INSERT INTO informacion_beneficio (id_info, id_beneficio) VALUES ($1, $2)",
+          [infoResult.rows[0].id_info, id]
+        );
+      }
+    }
+
+    await client.query("COMMIT");
+    return beneficio;
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+};
+
+/**
+ * Búsqueda paginada de beneficios (admin).
+ */
+export const buscarBeneficios = async (search, page, limit) => {
+  const offset = (page - 1) * limit;
+  const term = `%${search}%`;
+  const params = search ? [term, term, limit, offset] : [limit, offset];
+  const where = search
+    ? "WHERE b.nombre ILIKE $1 OR b.requisitos ILIKE $2"
+    : "";
+
+  const countResult = await pool.query(
+    `SELECT COUNT(*)::int AS total FROM beneficio b ${where}`,
+    search ? [term, term] : []
+  );
+
+  const result = await pool.query(
+    `
+    SELECT b.id_beneficio, b.nombre, b.descripcion, b.requisitos, b.costo,
+           b.edad_minima, b.slug, b.icon_name, b.id_categoria,
+           c.nombre AS categoria_nombre
+    FROM beneficio b
+    JOIN categoria c ON c.id_categoria = b.id_categoria
+    ${where}
+    ORDER BY b.nombre ASC
+    LIMIT $${search ? 3 : 1} OFFSET $${search ? 4 : 2}
+    `,
+    params
+  );
+
+  return {
+    data: result.rows,
+    total: countResult.rows[0].total,
+    page,
+    totalPages: Math.ceil(countResult.rows[0].total / limit),
+  };
+};
+
+/**
+ * Cuenta relaciones de un beneficio (para desglose de cascada).
+ */
+export const contarRelacionesBeneficio = async (id) => {
+  const comunas = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM beneficio_comuna WHERE id_beneficio = $1", [id]
+  );
+  const organismos = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM beneficio_organismo WHERE id_beneficio = $1", [id]
+  );
+  const info = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM informacion_beneficio WHERE id_beneficio = $1", [id]
+  );
+  return {
+    comunas: comunas.rows[0].total,
+    organismos: organismos.rows[0].total,
+    bloques_info: info.rows[0].total,
+  };
+};
