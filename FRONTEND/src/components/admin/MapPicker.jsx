@@ -59,8 +59,8 @@ export default function MapPicker({ lat, lng, onChange }) {
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Latitud</label>
           <input
-            type="number"
-            step="any"
+            type="text"
+            inputMode="decimal"
             value={position[0]}
             onChange={(e) => {
               const v = parseFloat(e.target.value);
@@ -72,8 +72,8 @@ export default function MapPicker({ lat, lng, onChange }) {
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Longitud</label>
           <input
-            type="number"
-            step="any"
+            type="text"
+            inputMode="decimal"
             value={position[1]}
             onChange={(e) => {
               const v = parseFloat(e.target.value);

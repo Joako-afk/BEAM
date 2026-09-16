@@ -291,7 +291,7 @@ export const eliminarInformacion = async (id) => {
 
 export const obtenerTerritorios = async () => {
   const result = await pool.query(
-    `SELECT id_divter, nombre, tipo, id_padre FROM division_territorial ORDER BY tipo, nombre`
+    `SELECT id_divter, nombre, tipo, id_padre FROM division_territorial ORDER BY t.tipo, t.nombre`
   );
   return result.rows;
 };
@@ -463,11 +463,11 @@ export const validarDuplicadoOrganismo = async (nombre_sucursal, id_divter, id_e
 export const buscarTerritorios = async (search, page, limit) => {
   const offset = (page - 1) * limit;
   const term = `%${search}%`;
-  const where = search ? "WHERE nombre ILIKE $1" : "";
+  const where = search ? "WHERE t.nombre ILIKE $1" : "";
   const params = search ? [term, limit, offset] : [limit, offset];
 
   const countResult = await pool.query(
-    `SELECT COUNT(*)::int AS total FROM division_territorial ${where}`,
+    `SELECT COUNT(*)::int AS total FROM division_territorial t ${where}`,
     search ? [term] : []
   );
 
@@ -478,7 +478,7 @@ export const buscarTerritorios = async (search, page, limit) => {
     FROM division_territorial t
     LEFT JOIN division_territorial p ON p.id_divter = t.id_padre
     ${where}
-    ORDER BY tipo, nombre
+    ORDER BY t.tipo, t.nombre
     LIMIT $${search ? 2 : 1} OFFSET $${search ? 3 : 2}
     `,
     params
