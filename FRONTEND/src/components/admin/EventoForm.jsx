@@ -40,7 +40,7 @@ export default function EventoForm({ data, onSubmit, onCancel }) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-        <textarea
+        <textarea spellCheck={false}
           rows={3}
           maxLength={2000}
           value={form.descripcion}

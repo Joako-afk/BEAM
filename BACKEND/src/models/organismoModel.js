@@ -123,13 +123,19 @@ export const actualizarInstitucion = async (id, nombre, descripcion, pagina_web,
 };
 
 export const eliminarInstitucion = async (id) => {
-  await pool.query(`DELETE FROM institucion_redes WHERE id_institucion = $1`, [id]);
-  const result = await pool.query(
-    `DELETE FROM institucion WHERE id_institucion = $1 RETURNING id_institucion`,
-    [id]
-  );
-  if (result.rowCount === 0) return null;
-  return result.rows[0];
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM institucion_redes WHERE id_institucion = $1", [id]);
+    const result = await client.query(
+      "DELETE FROM institucion WHERE id_institucion = $1 RETURNING id_institucion",
+      [id]
+    );
+    if (result.rowCount === 0) { await client.query("ROLLBACK"); return null; }
+    await client.query("COMMIT");
+    return result.rows[0];
+  } catch (e) { await client.query("ROLLBACK"); throw e; }
+  finally { client.release(); }
 };
 
 export const obtenerTodasLasInstitucionesAdmin = async () => {
@@ -200,14 +206,20 @@ export const actualizarOrganismo = async (id, nombre_sucursal, tipo, direccion, 
 };
 
 export const eliminarOrganismo = async (id) => {
-  await pool.query(`DELETE FROM beneficio_organismo WHERE id_organismo = $1`, [id]);
-  await pool.query(`DELETE FROM organismo_evento WHERE id_organismo = $1`, [id]);
-  const result = await pool.query(
-    `DELETE FROM organismo WHERE id_organismo = $1 RETURNING id_organismo`,
-    [id]
-  );
-  if (result.rowCount === 0) return null;
-  return result.rows[0];
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM beneficio_organismo WHERE id_organismo = $1", [id]);
+    await client.query("DELETE FROM organismo_evento WHERE id_organismo = $1", [id]);
+    const result = await client.query(
+      "DELETE FROM organismo WHERE id_organismo = $1 RETURNING id_organismo",
+      [id]
+    );
+    if (result.rowCount === 0) { await client.query("ROLLBACK"); return null; }
+    await client.query("COMMIT");
+    return result.rows[0];
+  } catch (e) { await client.query("ROLLBACK"); throw e; }
+  finally { client.release(); }
 };
 
 // ===== INFORMACION CRUD =====
@@ -262,13 +274,19 @@ export const actualizarInformacion = async (id, bloque, nombre, contenido) => {
 };
 
 export const eliminarInformacion = async (id) => {
-  await pool.query(`DELETE FROM informacion_beneficio WHERE id_info = $1`, [id]);
-  const result = await pool.query(
-    `DELETE FROM informacion WHERE id_info = $1 RETURNING id_info`,
-    [id]
-  );
-  if (result.rowCount === 0) return null;
-  return result.rows[0];
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM informacion_beneficio WHERE id_info = $1", [id]);
+    const result = await client.query(
+      "DELETE FROM informacion WHERE id_info = $1 RETURNING id_info",
+      [id]
+    );
+    if (result.rowCount === 0) { await client.query("ROLLBACK"); return null; }
+    await client.query("COMMIT");
+    return result.rows[0];
+  } catch (e) { await client.query("ROLLBACK"); throw e; }
+  finally { client.release(); }
 };
 
 export const obtenerTerritorios = async () => {
@@ -339,6 +357,16 @@ export const contarRelacionesComuna = async (idComuna) => {
   };
 };
 
+
+export const obtenerTerritorioPorId = async (id) => {
+  const result = await pool.query(
+    "SELECT id_divter, nombre, tipo, id_padre FROM division_territorial WHERE id_divter = $1",
+    [id]
+  );
+  return result.rows[0] || null;
+};
+
+
 export const eliminarRelacionesComuna = async (idComuna) => {
   await pool.query("DELETE FROM beneficio_comuna WHERE id_divter = $1", [idComuna]);
   await pool.query("UPDATE organismo SET id_divter = NULL WHERE id_divter = $1", [idComuna]);
@@ -401,9 +429,11 @@ export const buscarOrganismos = async (search, page, limit) => {
     `
     SELECT o.id_organismo, o.nombre_sucursal, o.tipo, o.direccion, o.telefono,
            ST_X(o.coordenadas) AS lng, ST_Y(o.coordenadas) AS lat,
-           o.id_institucion, o.id_divter, i.nombre AS institucion_nombre
+           o.id_institucion, o.id_divter, i.nombre AS institucion_nombre,
+           t.nombre AS comuna_nombre
     FROM organismo o
     LEFT JOIN institucion i ON i.id_institucion = o.id_institucion
+    LEFT JOIN division_territorial t ON t.id_divter = o.id_divter
     ${where}
     ORDER BY o.nombre_sucursal ASC
     LIMIT $${search ? 3 : 1} OFFSET $${search ? 4 : 2}
@@ -443,8 +473,10 @@ export const buscarTerritorios = async (search, page, limit) => {
 
   const result = await pool.query(
     `
-    SELECT id_divter, nombre, tipo, id_padre
-    FROM division_territorial
+    SELECT t.id_divter, t.nombre, t.tipo, t.id_padre,
+           p.nombre AS padre_nombre
+    FROM division_territorial t
+    LEFT JOIN division_territorial p ON p.id_divter = t.id_padre
     ${where}
     ORDER BY tipo, nombre
     LIMIT $${search ? 2 : 1} OFFSET $${search ? 3 : 2}

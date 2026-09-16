@@ -45,6 +45,7 @@ export default function OrganismoForm({ data, instituciones, territorios, onSubm
         <label className="block text-sm font-medium text-gray-700 mb-1">Nombre de la sucursal *</label>
         <input
           type="text"
+          spellCheck={false}
           required
           value={form.nombre_sucursal}
           onChange={(e) => setForm({ ...form, nombre_sucursal: e.target.value })}
@@ -57,7 +58,8 @@ export default function OrganismoForm({ data, instituciones, territorios, onSubm
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
           <input
-            type="text"
+          type="text"
+          spellCheck={false}
             value={form.tipo}
             onChange={(e) => setForm({ ...form, tipo: e.target.value })}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -67,7 +69,8 @@ export default function OrganismoForm({ data, instituciones, territorios, onSubm
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
           <input
-            type="text"
+          type="text"
+          spellCheck={false}
             value={form.telefono}
             onChange={(e) => setForm({ ...form, telefono: e.target.value })}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -80,6 +83,7 @@ export default function OrganismoForm({ data, instituciones, territorios, onSubm
         <label className="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
         <input
           type="text"
+          spellCheck={false}
           value={form.direccion}
           onChange={(e) => setForm({ ...form, direccion: e.target.value })}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

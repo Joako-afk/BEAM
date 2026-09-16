@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from "react";
+import { setCssVariables, resetCssVariables } from "../utils/setCssVariables";
 import SearchBar from "../components/busqueda";
 import { generatePalette } from "../utils/generatePalette";
 import { cardCategoria } from "../components/card";
@@ -16,7 +17,8 @@ export default function Inicio() {
     document.documentElement.style.setProperty("--light", "#f4f8e4");
     document.documentElement.style.setProperty("--text", "#ffffff");
 
-    fetch("http://localhost:4000/api/categorias")
+    const ctrl = new AbortController();
+    fetch("http://localhost:4000/api/categorias", { signal: ctrl.signal })
       .then((res) => res.json())
       .then((data) => {
         const enhanced = data.map((cat) => ({

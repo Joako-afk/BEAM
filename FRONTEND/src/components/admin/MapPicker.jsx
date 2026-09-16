@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 
 const markerIcon = new L.Icon({
@@ -9,6 +9,16 @@ const markerIcon = new L.Icon({
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
+
+function FlyToPosition({ position }) {
+  const map = useMap();
+  useEffect(() => {
+    if (position) {
+      map.flyTo(position, map.getZoom(), { duration: 1 });
+    }
+  }, [position, map]);
+  return null;
+}
 
 function MapClickHandler({ onPositionChange }) {
   useMapEvents({
@@ -41,6 +51,7 @@ export default function MapPicker({ lat, lng, onChange }) {
           />
           <Marker position={position} icon={markerIcon} />
           <MapClickHandler onPositionChange={handlePositionChange} />
+          <FlyToPosition position={position} />
         </MapContainer>
       </div>
       <p className="text-xs text-gray-500">Haz clic en el mapa para colocar las coordenadas</p>

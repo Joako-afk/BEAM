@@ -1,5 +1,6 @@
 ﻿// src/pages/categoria.jsx
 import { useEffect, useState } from "react";
+import { setCssVariables, resetCssVariables } from "../utils/setCssVariables";
 import { useParams, useNavigate } from "react-router-dom";
 import InfoPanelStatic from "../components/infoPanelStatic";
 import { generatePalette } from "../utils/generatePalette";
@@ -24,7 +25,8 @@ export default function Categoria() {
       ? `http://localhost:4000/api/instituciones/categoria/${slug}`
       : `http://localhost:4000/api/beneficios/categoria/${slug}`;
 
-    fetch(endpoint)
+    const ctrl = new AbortController();
+    fetch(endpoint, { signal: ctrl.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`API error: ${res.status}`);
         return res.json();

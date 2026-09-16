@@ -34,6 +34,7 @@ export default function TerritorioForm({ data, regiones, onSubmit, onCancel }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
         <input
           type="text"
+          spellCheck={false}
           required
           maxLength={100}
           value={form.nombre}

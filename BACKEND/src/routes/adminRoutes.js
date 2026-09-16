@@ -6,6 +6,7 @@ import {
   adminActualizarCategoria,
   adminEliminarCategoria,
   adminListarBeneficios,
+  adminObtenerBeneficio,
   adminCrearBeneficio,
   adminActualizarBeneficio,
   adminEliminarBeneficio,
@@ -40,6 +41,7 @@ router.put("/categorias/:id", adminActualizarCategoria);
 router.delete("/categorias/:id", adminEliminarCategoria);
 
 // Beneficios
+router.get("/beneficios/:id", adminObtenerBeneficio);
 router.get("/beneficios", adminListarBeneficios);
 router.post("/beneficios", adminCrearBeneficio);
 router.put("/beneficios/:id", adminActualizarBeneficio);

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Trash2, Search, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Trash2, Search, X, Upload, ChevronDown, Check } from "lucide-react";
 
 export default function BeneficioForm({ data, categorias, comunas, organismos, onSubmit, onCancel }) {
   const [form, setForm] = useState({
@@ -17,6 +17,10 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
 
   const [comunaSearch, setComunaSearch] = useState("");
   const [organismoSearch, setOrganismoSearch] = useState("");
+  const [iconPreview, setIconPreview] = useState(null);
+  const [catDropdownOpen, setCatDropdownOpen] = useState(false);
+  const catDropdownRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (data) {
@@ -32,8 +36,45 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
         organismosSeleccionados: data.organismosSeleccionados || [],
         infoBloques: data.infoBloques || [],
       });
+      if (data.icon_name) {
+        setIconPreview(`/icons/beneficios/${data.icon_name}`);
+      }
     }
   }, [data]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (catDropdownRef.current && !catDropdownRef.current.contains(e.target)) {
+        setCatDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("El archivo no puede superar 2MB");
+      return;
+    }
+    const ext = file.name.split(".").pop().toLowerCase();
+    if (!["svg", "png", "jpg"].includes(ext)) {
+      alert("Formato no válido. Use SVG, PNG o JPG");
+      return;
+    }
+    if (iconPreview) URL.revokeObjectURL(iconPreview);
+    setIconPreview(URL.createObjectURL(file));
+    setForm({ ...form, icon_name: file.name });
+  };
+
+  const handleRemoveIcon = () => {
+    if (iconPreview) URL.revokeObjectURL(iconPreview);
+    setIconPreview(null);
+    setForm({ ...form, icon_name: "" });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -95,6 +136,8 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
     c.nombre.toLowerCase().includes(comunaSearch.toLowerCase())
   );
 
+  const selectedCategoria = (categorias || []).find((c) => String(c.id_categoria) === String(form.id_categoria));
+
   const organismosFiltrados = (organismos || []).filter((o) =>
     o.nombre_sucursal?.toLowerCase().includes(organismoSearch.toLowerCase()) ||
     o.direccion?.toLowerCase().includes(organismoSearch.toLowerCase())
@@ -102,7 +145,6 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Campos básicos */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
         <input
@@ -118,22 +160,47 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
-        <select
-          required
-          value={form.id_categoria}
-          onChange={(e) => setForm({ ...form, id_categoria: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <option value="">Seleccionar categoría</option>
-          {categorias.map((cat) => (
-            <option key={cat.id_categoria} value={cat.id_categoria}>{cat.nombre}</option>
-          ))}
-        </select>
+        <div ref={catDropdownRef} className="relative">
+          <button
+            type="button"
+            onClick={() => setCatDropdownOpen(!catDropdownOpen)}
+            className="w-full flex items-center gap-2 border border-gray-300 rounded-lg px-3 py-2 text-sm text-left focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+          >
+            {selectedCategoria ? (
+              <>
+                <span className="w-4 h-4 rounded-full border border-gray-200 flex-shrink-0" style={{ backgroundColor: selectedCategoria.color_primary }} />
+                <span className="flex-1">{selectedCategoria.nombre}</span>
+              </>
+            ) : (
+              <span className="flex-1 text-gray-400">Seleccionar categoría</span>
+            )}
+            <ChevronDown size={16} className={`text-gray-400 transition-transform ${catDropdownOpen ? "rotate-180" : ""}`} />
+          </button>
+          {catDropdownOpen && (
+            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {(categorias || []).map((cat) => (
+                <button
+                  key={cat.id_categoria}
+                  type="button"
+                  onClick={() => {
+                    setForm({ ...form, id_categoria: cat.id_categoria });
+                    setCatDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 text-left"
+                >
+                  <span className="w-4 h-4 rounded-full border border-gray-200 flex-shrink-0" style={{ backgroundColor: cat.color_primary }} />
+                  <span className="flex-1">{cat.nombre}</span>
+                  {String(form.id_categoria) === String(cat.id_categoria) && <Check size={14} className="text-blue-600" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-        <textarea
+        <textarea spellCheck={false}
           rows={3}
           maxLength={2000}
           value={form.descripcion}
@@ -145,7 +212,7 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Requisitos</label>
-        <textarea
+        <textarea spellCheck={false}
           rows={3}
           maxLength={2000}
           value={form.requisitos}
@@ -179,17 +246,34 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Icono (nombre del archivo SVG)</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Icono (formato .SVG)</label>
         <input
-          type="text"
-          value={form.icon_name}
-          onChange={(e) => setForm({ ...form, icon_name: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Ej: examen.svg"
+          ref={fileInputRef}
+          type="file"
+          accept=".svg,.png,.jpg"
+          onChange={handleFileChange}
+          className="hidden"
+          id="beneficio-icon-upload"
         />
+        {iconPreview ? (
+          <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+            <img src={iconPreview} alt="Preview" className="w-10 h-10 object-contain" />
+            <span className="text-sm text-gray-600 flex-1 truncate">{form.icon_name}</span>
+            <button type="button" onClick={handleRemoveIcon} className="text-red-400 hover:text-red-600">
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          <label
+            htmlFor="beneficio-icon-upload"
+            className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+          >
+            <Upload size={18} className="text-gray-400" />
+            <span className="text-sm text-gray-500">Seleccionar archivo</span>
+          </label>
+        )}
       </div>
 
-      {/* Comunas */}
       <div className="border-t pt-4">
         <h4 className="text-sm font-semibold text-gray-700 mb-2">Comunas</h4>
         {comunas.length === 0 ? (
@@ -226,7 +310,6 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
         )}
       </div>
 
-      {/* Organismos */}
       <div className="border-t pt-4">
         <h4 className="text-sm font-semibold text-gray-700 mb-2">Organismos</h4>
         {organismos.length === 0 ? (
@@ -264,7 +347,6 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
         )}
       </div>
 
-      {/* Bloques de información */}
       <div className="border-t pt-4">
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-sm font-semibold text-gray-700">Información Extra</h4>
@@ -295,7 +377,7 @@ export default function BeneficioForm({ data, categorias, comunas, organismos, o
                   placeholder="Nombre del bloque"
                   className="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-blue-500"
                 />
-                <textarea
+                <textarea spellCheck={false}
                   rows={2}
                   value={bloque.contenido}
                   onChange={(e) => updateInfoBloque(i, "contenido", e.target.value)}

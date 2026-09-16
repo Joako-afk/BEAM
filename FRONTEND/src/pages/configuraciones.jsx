@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  FolderOpen, Gift, Building2, MapPin, FileText,
+  FolderOpen, Gift, Building2, MapPin,
   Plus, Pencil, Trash2, ArrowLeft, Settings,
   Calendar, Mountain, Search, X,
 } from "lucide-react";
@@ -9,7 +9,6 @@ import CategoriaForm from "../components/admin/CategoriaForm";
 import BeneficioForm from "../components/admin/BeneficioForm";
 import InstitucionForm from "../components/admin/InstitucionForm";
 import OrganismoForm from "../components/admin/OrganismoForm";
-import InformacionForm from "../components/admin/InformacionForm";
 import EventoForm from "../components/admin/EventoForm";
 import TerritorioForm from "../components/admin/TerritorioForm";
 
@@ -18,7 +17,6 @@ const API = "http://localhost:4000/api/admin";
 const TABS = [
   { id: "categorias", label: "Categorías", icon: FolderOpen },
   { id: "beneficios", label: "Beneficios", icon: Gift },
-  { id: "informacion", label: "Información", icon: FileText },
   { id: "instituciones", label: "Instituciones", icon: Building2 },
   { id: "organismos", label: "Organismos", icon: MapPin },
   { id: "territorios", label: "Territorios", icon: Mountain },
@@ -28,7 +26,6 @@ const TABS = [
 const ENTITY_LABELS = {
   categorias: "categorías",
   beneficios: "beneficios",
-  informacion: "información",
   instituciones: "instituciones",
   organismos: "organismos",
   territorios: "territorios",
@@ -46,7 +43,6 @@ export default function Configuraciones() {
 
   const [categorias, setCategorias] = useState({ data: [], total: 0, page: 1, totalPages: 1 });
   const [beneficios, setBeneficios] = useState({ data: [], total: 0, page: 1, totalPages: 1 });
-  const [informacion, setInformacion] = useState({ data: [], total: 0, page: 1, totalPages: 1 });
   const [instituciones, setInstituciones] = useState({ data: [], total: 0, page: 1, totalPages: 1 });
   const [organismos, setOrganismos] = useState({ data: [], total: 0, page: 1, totalPages: 1 });
   const [territorios, setTerritorios] = useState({ data: [], total: 0, page: 1, totalPages: 1 });
@@ -54,6 +50,7 @@ export default function Configuraciones() {
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const searchRef = useRef("");
   const debounceRef = useRef(null);
 
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -71,18 +68,16 @@ export default function Configuraciones() {
     setLoading(true);
     setError(null);
     try {
-      const [cat, ben, info, inst, org, terr, ev] = await Promise.all([
-        fetchTab("categorias", page, search),
-        fetchTab("beneficios", page, search),
-        fetchTab("informacion", page, search),
-        fetchTab("instituciones", page, search),
-        fetchTab("organismos", page, search),
-        fetchTab("territorios", page, search),
-        fetchTab("eventos", page, search),
+      const [cat, ben, inst, org, terr, ev] = await Promise.all([
+        fetchTab("categorias", page, searchRef.current),
+        fetchTab("beneficios", page, searchRef.current),
+        fetchTab("instituciones", page, searchRef.current),
+        fetchTab("organismos", page, searchRef.current),
+        fetchTab("territorios", page, searchRef.current),
+        fetchTab("eventos", page, searchRef.current),
       ]);
       setCategorias(cat);
       setBeneficios(ben);
-      setInformacion(info);
       setInstituciones(inst);
       setOrganismos(org);
       setTerritorios(terr);
@@ -92,24 +87,46 @@ export default function Configuraciones() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, fetchTab]);
+  }, [page, fetchTab]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const handleSearchChange = (value) => {
+    searchRef.current = value;
     setSearch(value);
     setPage(1);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {}, 300);
+    debounceRef.current = setTimeout(() => {
+      fetchAll();
+    }, 300);
   };
 
   const handleClearSearch = () => {
+    searchRef.current = "";
     setSearch("");
     setPage(1);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    fetchAll();
   };
 
   const handleCreate = () => { setEditing(null); setModalOpen(true); };
-  const handleEdit = (item) => { setEditing(item); setModalOpen(true); };
+  const handleEdit = async (item) => {
+    if (activeTab === "beneficios") {
+      try {
+        const res = await fetch(`http://localhost:4000/api/admin/beneficios/${item.id_beneficio}`);
+        if (!res.ok) throw new Error("Error al obtener beneficio");
+        const fullData = await res.json();
+        setEditing(fullData);
+        setModalOpen(true);
+      } catch (err) {
+        console.error("Error fetching benefit:", err);
+        alert("Error al cargar los datos del beneficio");
+      }
+    } else {
+      setEditing(item);
+      setModalOpen(true);
+    }
+  };
   const handleClose = () => { setModalOpen(false); setEditing(null); };
 
   const handleDelete = async () => {
@@ -152,7 +169,6 @@ export default function Configuraciones() {
   const handlers = {
     categorias: (form) => handleSubmit("categorias", form, "id_categoria"),
     beneficios: (form) => handleSubmit("beneficios", form, "id_beneficio"),
-    informacion: (form) => handleSubmit("informacion", form, "id_info"),
     instituciones: (form) => handleSubmit("instituciones", form, "id_institucion"),
     organismos: (form) => handleSubmit("organismos", form, "id_organismo"),
     territorios: (form) => handleSubmit("territorios", form, "id_divter"),
@@ -162,7 +178,6 @@ export default function Configuraciones() {
   const modalTitles = {
     categorias: editing ? "Editar Categoría" : "Nueva Categoría",
     beneficios: editing ? "Editar Beneficio" : "Nuevo Beneficio",
-    informacion: editing ? "Editar Información" : "Nueva Información",
     instituciones: editing ? "Editar Institución" : "Nueva Institución",
     organismos: editing ? "Editar Organismo" : "Nuevo Organismo",
     territorios: editing ? "Editar Territorio" : "Nuevo Territorio",
@@ -172,7 +187,6 @@ export default function Configuraciones() {
   const tabData = {
     categorias,
     beneficios,
-    informacion,
     instituciones,
     organismos,
     territorios,
@@ -197,7 +211,6 @@ export default function Configuraciones() {
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-6">
-        {/* Tabs */}
         <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -205,7 +218,7 @@ export default function Configuraciones() {
             return (
               <button
                 key={tab.id}
-                onClick={() => { setActiveTab(tab.id); setSearch(""); setPage(1); }}
+                onClick={() => { setActiveTab(tab.id); setSearch(""); searchRef.current = ""; setPage(1); }}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
                   isActive
                     ? "bg-blue-600 text-white shadow-md"
@@ -219,7 +232,6 @@ export default function Configuraciones() {
           })}
         </div>
 
-        {/* Error */}
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center justify-between">
             <span>{error}</span>
@@ -231,7 +243,6 @@ export default function Configuraciones() {
           <div className="text-center py-20 text-gray-400">Cargando datos...</div>
         ) : (
           <>
-            {/* Search + Add */}
             <div className="flex gap-3 mb-4">
               <div className="relative flex-1">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -255,7 +266,6 @@ export default function Configuraciones() {
                 <Plus size={16} />
                 {activeTab === "categorias" && "Nueva Categoría"}
                 {activeTab === "beneficios" && "Nuevo Beneficio"}
-                {activeTab === "informacion" && "Nueva Información"}
                 {activeTab === "instituciones" && "Nueva Institución"}
                 {activeTab === "organismos" && "Nuevo Organismo"}
                 {activeTab === "territorios" && "Nuevo Territorio"}
@@ -263,16 +273,12 @@ export default function Configuraciones() {
               </button>
             </div>
 
-            {/* Table */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
               {activeTab === "categorias" && (
                 <TablaCategorias data={categorias} onEdit={handleEdit} onDelete={(id, name) => openDeleteConfirm("categorias", id, name)} />
               )}
               {activeTab === "beneficios" && (
                 <TablaBeneficios data={beneficios} onEdit={handleEdit} onDelete={(id, name) => openDeleteConfirm("beneficios", id, name)} />
-              )}
-              {activeTab === "informacion" && (
-                <TablaInformacion data={informacion} onEdit={handleEdit} onDelete={(id, name) => openDeleteConfirm("informacion", id, name)} />
               )}
               {activeTab === "instituciones" && (
                 <TablaInstituciones data={instituciones} onEdit={handleEdit} onDelete={(id, name) => openDeleteConfirm("instituciones", id, name)} />
@@ -288,7 +294,6 @@ export default function Configuraciones() {
               )}
             </div>
 
-            {/* Pagination */}
             {currentData.totalPages > 1 && (
               <div className="flex items-center justify-between mt-4">
                 <p className="text-sm text-gray-500">
@@ -319,16 +324,12 @@ export default function Configuraciones() {
         )}
       </div>
 
-      {/* Modal crear/editar */}
       <Modal isOpen={modalOpen} onClose={handleClose} title={modalTitles[activeTab]}>
         {activeTab === "categorias" && (
           <CategoriaForm data={editing} onSubmit={handlers.categorias} onCancel={handleClose} />
         )}
         {activeTab === "beneficios" && (
           <BeneficioForm data={editing} categorias={categorias.data} comunas={territorios.data.filter((t) => t.tipo === "COMUNA")} organismos={organismos.data} onSubmit={handlers.beneficios} onCancel={handleClose} />
-        )}
-        {activeTab === "informacion" && (
-          <InformacionForm data={editing} beneficios={beneficios.data} onSubmit={handlers.informacion} onCancel={handleClose} />
         )}
         {activeTab === "instituciones" && (
           <InstitucionForm data={editing} categorias={categorias.data} onSubmit={handlers.instituciones} onCancel={handleClose} />
@@ -344,7 +345,6 @@ export default function Configuraciones() {
         )}
       </Modal>
 
-      {/* Confirmar eliminación */}
       <Modal isOpen={!!confirmDelete} onClose={() => { setConfirmDelete(null); setDeleteError(null); }} title="Confirmar eliminación">
         {deleteError ? (
           <div>
@@ -381,8 +381,6 @@ export default function Configuraciones() {
     </div>
   );
 }
-
-// ======== TABLAS ========
 
 function EmptyState({ entity }) {
   return (
@@ -436,7 +434,7 @@ function TablaCategorias({ data, onEdit, onDelete }) {
 }
 
 function TablaBeneficios({ data, onEdit, onDelete }) {
-  if (!data.data.length) return data.total === 0 ? <EmptyState entity="beneficios" /> : <SearchEmptyState entity="beneficios" />;
+  if (!data.data.length) return data.total === 0 ? <EmptyState entity="beneficios" /> : <SearchEmptyState />;
   return (
     <table className="w-full text-sm">
       <thead className="bg-gray-50 border-b border-gray-200">
@@ -468,41 +466,8 @@ function TablaBeneficios({ data, onEdit, onDelete }) {
   );
 }
 
-function TablaInformacion({ data, onEdit, onDelete }) {
-  if (!data.data.length) return data.total === 0 ? <EmptyState entity="información" /> : <SearchEmptyState entity="información" />;
-  return (
-    <table className="w-full text-sm">
-      <thead className="bg-gray-50 border-b border-gray-200">
-        <tr>
-          <th className="text-left px-4 py-3 font-medium text-gray-600">Nombre</th>
-          <th className="text-left px-4 py-3 font-medium text-gray-600">Bloque</th>
-          <th className="text-left px-4 py-3 font-medium text-gray-600">Beneficio</th>
-          <th className="text-left px-4 py-3 font-medium text-gray-600">Contenido</th>
-          <th className="text-right px-4 py-3 font-medium text-gray-600">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.data.map((info) => (
-          <tr key={info.id_info} className="border-b border-gray-100 hover:bg-gray-50">
-            <td className="px-4 py-3 font-medium text-gray-800">{info.nombre}</td>
-            <td className="px-4 py-3 text-gray-500">{info.bloque}</td>
-            <td className="px-4 py-3 text-gray-500">{info.beneficio_nombre || "—"}</td>
-            <td className="px-4 py-3 text-gray-500 max-w-xs truncate">{info.contenido}</td>
-            <td className="px-4 py-3 text-right">
-              <div className="flex gap-1 justify-end">
-                <button onClick={() => onEdit(info)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600"><Pencil size={15} /></button>
-                <button onClick={() => onDelete(info.id_info, info.nombre)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-600"><Trash2 size={15} /></button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
 function TablaInstituciones({ data, onEdit, onDelete }) {
-  if (!data.data.length) return data.total === 0 ? <EmptyState entity="instituciones" /> : <SearchEmptyState entity="instituciones" />;
+  if (!data.data.length) return data.total === 0 ? <EmptyState entity="instituciones" /> : <SearchEmptyState />;
   return (
     <table className="w-full text-sm">
       <thead className="bg-gray-50 border-b border-gray-200">
@@ -535,7 +500,7 @@ function TablaInstituciones({ data, onEdit, onDelete }) {
 }
 
 function TablaOrganismos({ data, onEdit, onDelete }) {
-  if (!data.data.length) return data.total === 0 ? <EmptyState entity="organismos" /> : <SearchEmptyState entity="organismos" />;
+  if (!data.data.length) return data.total === 0 ? <EmptyState entity="organismos" /> : <SearchEmptyState />;
   return (
     <table className="w-full text-sm">
       <thead className="bg-gray-50 border-b border-gray-200">
@@ -543,7 +508,7 @@ function TablaOrganismos({ data, onEdit, onDelete }) {
           <th className="text-left px-4 py-3 font-medium text-gray-600">Sucursal</th>
           <th className="text-left px-4 py-3 font-medium text-gray-600">Institución</th>
           <th className="text-left px-4 py-3 font-medium text-gray-600">Dirección</th>
-          <th className="text-left px-4 py-3 font-medium text-gray-600">Coordenadas</th>
+          <th className="text-left px-4 py-3 font-medium text-gray-600">Comuna</th>
           <th className="text-right px-4 py-3 font-medium text-gray-600">Acciones</th>
         </tr>
       </thead>
@@ -553,7 +518,7 @@ function TablaOrganismos({ data, onEdit, onDelete }) {
             <td className="px-4 py-3 font-medium text-gray-800">{org.nombre_sucursal}</td>
             <td className="px-4 py-3 text-gray-500">{org.institucion_nombre || "—"}</td>
             <td className="px-4 py-3 text-gray-500">{org.direccion || "—"}</td>
-            <td className="px-4 py-3 text-gray-500 text-xs">{org.lat?.toFixed(4)}, {org.lng?.toFixed(4)}</td>
+            <td className="px-4 py-3 text-gray-500">{org.comuna_nombre || "—"}</td>
             <td className="px-4 py-3 text-right">
               <div className="flex gap-1 justify-end">
                 <button onClick={() => onEdit(org)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600"><Pencil size={15} /></button>
@@ -568,14 +533,14 @@ function TablaOrganismos({ data, onEdit, onDelete }) {
 }
 
 function TablaTerritorios({ data, onEdit, onDelete }) {
-  if (!data.data.length) return data.total === 0 ? <EmptyState entity="territorios" /> : <SearchEmptyState entity="territorios" />;
+  if (!data.data.length) return data.total === 0 ? <EmptyState entity="territorios" /> : <SearchEmptyState />;
   return (
     <table className="w-full text-sm">
       <thead className="bg-gray-50 border-b border-gray-200">
         <tr>
           <th className="text-left px-4 py-3 font-medium text-gray-600">Nombre</th>
           <th className="text-left px-4 py-3 font-medium text-gray-600">Tipo</th>
-          <th className="text-left px-4 py-3 font-medium text-gray-600">ID Padre</th>
+          <th className="text-left px-4 py-3 font-medium text-gray-600">Región</th>
           <th className="text-right px-4 py-3 font-medium text-gray-600">Acciones</th>
         </tr>
       </thead>
@@ -588,7 +553,7 @@ function TablaTerritorios({ data, onEdit, onDelete }) {
                 {t.tipo}
               </span>
             </td>
-            <td className="px-4 py-3 text-gray-500">{t.id_padre || "—"}</td>
+            <td className="px-4 py-3 text-gray-500">{t.padre_nombre || "—"}</td>
             <td className="px-4 py-3 text-right">
               <div className="flex gap-1 justify-end">
                 <button onClick={() => onEdit(t)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600"><Pencil size={15} /></button>
@@ -603,7 +568,7 @@ function TablaTerritorios({ data, onEdit, onDelete }) {
 }
 
 function TablaEventos({ data, onEdit, onDelete }) {
-  if (!data.data.length) return data.total === 0 ? <EmptyState entity="eventos" /> : <SearchEmptyState entity="eventos" />;
+  if (!data.data.length) return data.total === 0 ? <EmptyState entity="eventos" /> : <SearchEmptyState />;
   return (
     <table className="w-full text-sm">
       <thead className="bg-gray-50 border-b border-gray-200">

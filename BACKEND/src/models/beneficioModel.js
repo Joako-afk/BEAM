@@ -223,15 +223,21 @@ export const actualizarBeneficio = async (id, nombre, descripcion, requisitos, c
  * Elimina un beneficio por su ID.
  */
 export const eliminarBeneficio = async (id) => {
-  await pool.query(`DELETE FROM informacion_beneficio WHERE id_beneficio = $1`, [id]);
-  await pool.query(`DELETE FROM beneficio_organismo WHERE id_beneficio = $1`, [id]);
-  await pool.query(`DELETE FROM beneficio_comuna WHERE id_beneficio = $1`, [id]);
-  const result = await pool.query(
-    `DELETE FROM beneficio WHERE id_beneficio = $1 RETURNING id_beneficio`,
-    [id]
-  );
-  if (result.rowCount === 0) return null;
-  return result.rows[0];
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("DELETE FROM informacion_beneficio WHERE id_beneficio = $1", [id]);
+    await client.query("DELETE FROM beneficio_organismo WHERE id_beneficio = $1", [id]);
+    await client.query("DELETE FROM beneficio_comuna WHERE id_beneficio = $1", [id]);
+    const result = await client.query(
+      "DELETE FROM beneficio WHERE id_beneficio = $1 RETURNING id_beneficio",
+      [id]
+    );
+    if (result.rowCount === 0) { await client.query("ROLLBACK"); return null; }
+    await client.query("COMMIT");
+    return result.rows[0];
+  } catch (e) { await client.query("ROLLBACK"); throw e; }
+  finally { client.release(); }
 };
 
 /**
@@ -329,26 +335,35 @@ export const editarBeneficioTransaccion = async (id, data) => {
     }
     const beneficio = result.rows[0];
 
-    await client.query("DELETE FROM beneficio_comuna WHERE id_beneficio = $1", [id]);
-    if (data.comunas && data.comunas.length > 0) {
-      for (const idDivter of data.comunas) {
-        await client.query(
-          "INSERT INTO beneficio_comuna (id_beneficio, id_divter) VALUES ($1, $2)",
-          [id, idDivter]
-        );
+    // Comunas: sync solo lo necesario
+    const comunasActuales = (await client.query(
+      "SELECT id_divter FROM beneficio_comuna WHERE id_beneficio = $1", [id]
+    )).rows.map(r => r.id_divter);
+    for (const idDivter of comunasActuales) {
+      if (!(data.comunas || []).includes(idDivter)) {
+        await client.query("DELETE FROM beneficio_comuna WHERE id_beneficio = $1 AND id_divter = $2", [id, idDivter]);
+      }
+    }
+    for (const idDivter of (data.comunas || [])) {
+      if (!comunasActuales.includes(idDivter)) {
+        await client.query("INSERT INTO beneficio_comuna (id_beneficio, id_divter) VALUES ($1, $2)", [id, idDivter]);
       }
     }
 
-    await client.query("DELETE FROM beneficio_organismo WHERE id_beneficio = $1", [id]);
-    if (data.organismos && data.organismos.length > 0) {
-      for (const idOrganismo of data.organismos) {
-        await client.query(
-          "INSERT INTO beneficio_organismo (id_beneficio, id_organismo) VALUES ($1, $2)",
-          [id, idOrganismo]
-        );
+    // Organismos: sync solo lo necesario
+    const organismosActuales = (await client.query(
+      "SELECT id_organismo FROM beneficio_organismo WHERE id_beneficio = $1", [id]
+    )).rows.map(r => r.id_organismo);
+    for (const idOrganismo of organismosActuales) {
+      if (!(data.organismos || []).includes(idOrganismo)) {
+        await client.query("DELETE FROM beneficio_organismo WHERE id_beneficio = $1 AND id_organismo = $2", [id, idOrganismo]);
       }
     }
-
+    for (const idOrganismo of (data.organismos || [])) {
+      if (!organismosActuales.includes(idOrganismo)) {
+        await client.query("INSERT INTO beneficio_organismo (id_beneficio, id_organismo) VALUES ($1, $2)", [id, idOrganismo]);
+      }
+    }
     const infoVieja = await client.query(
       "SELECT id_info FROM informacion_beneficio WHERE id_beneficio = $1", [id]
     );
@@ -437,4 +452,50 @@ export const contarRelacionesBeneficio = async (id) => {
     organismos: organismos.rows[0].total,
     bloques_info: info.rows[0].total,
   };
+};
+
+/**
+ * Obtiene un beneficio completo con relaciones (admin edit).
+ */
+export const obtenerBeneficioAdminPorId = async (id) => {
+  const result = await pool.query(
+    `
+    SELECT
+      b.id_beneficio, b.nombre, b.descripcion, b.requisitos, b.costo,
+      b.edad_minima, b.slug, b.icon_name, b.id_categoria,
+      c.nombre AS categoria_nombre
+    FROM beneficio b
+    JOIN categoria c ON c.id_categoria = b.id_categoria
+    WHERE b.id_beneficio = $1
+    `,
+    [id]
+  );
+  if (result.rowCount === 0) return null;
+  const beneficio = result.rows[0];
+
+  const comunasResult = await pool.query(
+    "SELECT bc.id_divter FROM beneficio_comuna bc WHERE bc.id_beneficio = $1",
+    [id]
+  );
+  beneficio.comunasSeleccionadas = comunasResult.rows.map((r) => r.id_divter);
+
+  const organismosResult = await pool.query(
+    "SELECT bo.id_organismo FROM beneficio_organismo bo WHERE bo.id_beneficio = $1",
+    [id]
+  );
+  beneficio.organismosSeleccionados = organismosResult.rows.map((r) => r.id_organismo);
+
+  const infoResult = await pool.query(
+    `
+    SELECT i.nombre, i.contenido
+    FROM informacion i
+    JOIN informacion_beneficio ib ON ib.id_info = i.id_info
+    WHERE ib.id_beneficio = $1
+    ORDER BY i.bloque ASC, i.id_info ASC
+    `,
+    [id]
+  );
+  beneficio.infoBloques = infoResult.rows;
+
+  return beneficio;
 };

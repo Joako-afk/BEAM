@@ -1,7 +1,6 @@
 // src/controllers/adminController.js
 import { slugify } from "../utils/slugify.js";
 import {
-  obtenerCategorias,
   crearCategoria,
   actualizarCategoria,
   eliminarCategoria,
@@ -9,21 +8,17 @@ import {
   contarBeneficiosPorCategoria,
 } from "../models/categoriaModel.js";
 import {
-  listarTodosLosBeneficios,
-  crearBeneficio,
-  actualizarBeneficio,
   eliminarBeneficio,
   buscarBeneficios,
   contarRelacionesBeneficio,
   crearBeneficioTransaccion,
   editarBeneficioTransaccion,
+  obtenerBeneficioAdminPorId,
 } from "../models/beneficioModel.js";
 import {
-  obtenerTodasLasInstitucionesAdmin,
   crearInstitucion,
   actualizarInstitucion,
   eliminarInstitucion,
-  obtenerTodosLosOrganismos,
   crearOrganismo,
   actualizarOrganismo,
   eliminarOrganismo,
@@ -31,7 +26,6 @@ import {
   crearInformacion,
   actualizarInformacion,
   eliminarInformacion,
-  obtenerTerritorios,
   crearTerritorio,
   actualizarTerritorio,
   eliminarTerritorio,
@@ -44,9 +38,9 @@ import {
   buscarOrganismos,
   validarDuplicadoOrganismo,
   buscarTerritorios,
+  obtenerTerritorioPorId,
 } from "../models/organismoModel.js";
 import {
-  obtenerTodosLosEventos,
   crearEvento,
   actualizarEvento,
   eliminarEvento,
@@ -62,7 +56,7 @@ const PAGE_SIZE = 20;
 export const adminListarCategorias = async (req, res) => {
   try {
     const { search, page = 1 } = req.query;
-    const result = await buscarCategorias(search || "", Number(page), PAGE_SIZE);
+    const result = await buscarCategorias(search || "", Math.max(1, Math.min(Number(page) || 1, 1000)), PAGE_SIZE);
     res.json(result);
   } catch (error) {
     console.error("Error admin listar categorías:", error);
@@ -120,10 +114,23 @@ export const adminEliminarCategoria = async (req, res) => {
 
 // ========== BENEFICIOS ==========
 
+
+export const adminObtenerBeneficio = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const beneficio = await obtenerBeneficioAdminPorId(id);
+    if (!beneficio) return res.status(404).json({ error: "Beneficio no encontrado" });
+    res.json(beneficio);
+  } catch (error) {
+    console.error("Error admin obtener beneficio:", error);
+    res.status(500).json({ error: "Error al obtener beneficio" });
+  }
+};
+
 export const adminListarBeneficios = async (req, res) => {
   try {
     const { search, page = 1 } = req.query;
-    const result = await buscarBeneficios(search || "", Number(page), PAGE_SIZE);
+    const result = await buscarBeneficios(search || "", Math.max(1, Math.min(Number(page) || 1, 1000)), PAGE_SIZE);
     res.json(result);
   } catch (error) {
     console.error("Error admin listar beneficios:", error);
@@ -196,7 +203,7 @@ export const adminEliminarBeneficio = async (req, res) => {
 export const adminListarInstituciones = async (req, res) => {
   try {
     const { search, page = 1 } = req.query;
-    const result = await buscarInstituciones(search || "", Number(page), PAGE_SIZE);
+    const result = await buscarInstituciones(search || "", Math.max(1, Math.min(Number(page) || 1, 1000)), PAGE_SIZE);
     res.json(result);
   } catch (error) {
     console.error("Error admin listar instituciones:", error);
@@ -257,7 +264,7 @@ export const adminEliminarInstitucion = async (req, res) => {
 export const adminListarOrganismos = async (req, res) => {
   try {
     const { search, page = 1 } = req.query;
-    const result = await buscarOrganismos(search || "", Number(page), PAGE_SIZE);
+    const result = await buscarOrganismos(search || "", Math.max(1, Math.min(Number(page) || 1, 1000)), PAGE_SIZE);
     res.json(result);
   } catch (error) {
     console.error("Error admin listar organismos:", error);
@@ -381,7 +388,7 @@ export const adminEliminarInformacion = async (req, res) => {
 export const adminListarTerritorios = async (req, res) => {
   try {
     const { search, page = 1 } = req.query;
-    const result = await buscarTerritorios(search || "", Number(page), PAGE_SIZE);
+    const result = await buscarTerritorios(search || "", Math.max(1, Math.min(Number(page) || 1, 1000)), PAGE_SIZE);
     res.json(result);
   } catch (error) {
     console.error("Error admin listar territorios:", error);
@@ -434,7 +441,7 @@ export const adminEliminarTerritorio = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const territorio = await obtenerTerritorios().then(t => t.find(t => t.id_divter === Number(id)));
+    const territorio = await obtenerTerritorioPorId(id);
     if (!territorio) return res.status(404).json({ error: "Territorio no encontrado" });
 
     if (territorio.tipo === "REGION") {
@@ -463,7 +470,7 @@ export const adminEliminarTerritorio = async (req, res) => {
 export const adminListarEventos = async (req, res) => {
   try {
     const { search, page = 1 } = req.query;
-    const result = await buscarEventos(search || "", Number(page), PAGE_SIZE);
+    const result = await buscarEventos(search || "", Math.max(1, Math.min(Number(page) || 1, 1000)), PAGE_SIZE);
     res.json(result);
   } catch (error) {
     console.error("Error admin listar eventos:", error);
