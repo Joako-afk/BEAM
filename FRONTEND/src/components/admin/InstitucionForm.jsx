@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Upload, X } from "lucide-react";
 
 export default function InstitucionForm({ data, categorias, onSubmit, onCancel }) {
   const [form, setForm] = useState({
@@ -9,6 +10,8 @@ export default function InstitucionForm({ data, categorias, onSubmit, onCancel }
     email_contacto: "",
     id_categoria: "",
   });
+  const [logoPreview, setLogoPreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (data) {
@@ -20,8 +23,39 @@ export default function InstitucionForm({ data, categorias, onSubmit, onCancel }
         email_contacto: data.email_contacto || "",
         id_categoria: data.id_categoria || "",
       });
+      if (data.logo_url) {
+        if (data.logo_url.startsWith("http") || data.logo_url.startsWith("/")) {
+          setLogoPreview(data.logo_url);
+        } else {
+          setLogoPreview(`/icons/instituciones/${data.logo_url}`);
+        }
+      }
     }
   }, [data]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("El archivo no puede superar 2MB");
+      return;
+    }
+    const ext = file.name.split(".").pop().toLowerCase();
+    if (!["svg", "png", "jpg"].includes(ext)) {
+      alert("Formato no válido. Use SVG, PNG o JPG");
+      return;
+    }
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    setLogoPreview(URL.createObjectURL(file));
+    setForm({ ...form, logo_url: file.name });
+  };
+
+  const handleRemoveLogo = () => {
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    setLogoPreview(null);
+    setForm({ ...form, logo_url: "" });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,7 +63,7 @@ export default function InstitucionForm({ data, categorias, onSubmit, onCancel }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form noValidate onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
         <input
@@ -58,7 +92,7 @@ export default function InstitucionForm({ data, categorias, onSubmit, onCancel }
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-        <textarea
+        <textarea spellCheck={false}
           rows={3}
           value={form.descripcion}
           onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
@@ -79,14 +113,32 @@ export default function InstitucionForm({ data, categorias, onSubmit, onCancel }
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">URL del logo</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Logo (formato .SVG)</label>
         <input
-          type="url"
-          value={form.logo_url}
-          onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="https://...logo.png"
+          ref={fileInputRef}
+          type="file"
+          accept=".svg,.png,.jpg"
+          onChange={handleFileChange}
+          className="hidden"
+          id="logo-upload"
         />
+        {logoPreview ? (
+          <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+            <img src={logoPreview} alt="Preview" className="w-10 h-10 object-contain" />
+            <span className="text-sm text-gray-600 flex-1 truncate">{form.logo_url}</span>
+            <button type="button" onClick={handleRemoveLogo} className="text-red-400 hover:text-red-600">
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
+          <label
+            htmlFor="logo-upload"
+            className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+          >
+            <Upload size={18} className="text-gray-400" />
+            <span className="text-sm text-gray-500">Seleccionar archivo</span>
+          </label>
+        )}
       </div>
 
       <div>

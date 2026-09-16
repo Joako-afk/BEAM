@@ -46,6 +46,19 @@ const darkenToContrast = (hex, targetRatio = 4.5) => {
   return adj;
 };
 
+const lightenToContrast = (hex, targetRatio = 4.5) => {
+  const { r, g, b } = toRGB(hex);
+  let adj = hex;
+  for (let f = 1.05; f <= 2.5; f += 0.05) {
+    const lr = Math.min(255, Math.round(r * f));
+    const lg = Math.min(255, Math.round(g * f));
+    const lb = Math.min(255, Math.round(b * f));
+    adj = `#${lr.toString(16).padStart(2,'0')}${lg.toString(16).padStart(2,'0')}${lb.toString(16).padStart(2,'0')}`;
+    if (contrastRatio(adj, "#ffffff") >= targetRatio && contrastRatio(adj, hex) >= 1.5) return adj;
+  }
+  return adj;
+};
+
 const ensureContrastWithWhite = (hex, targetRatio = 4.5) => {
   if (contrastRatio(hex, "#ffffff") >= targetRatio) return hex;
   return darkenToContrast(hex, targetRatio);
@@ -56,7 +69,7 @@ export function generatePalette(primary) {
   const adjustedPrimary = ensureContrastWithWhite(safePrimary, 4.5);
 
   // secondary: oscurecido lo mínimo para pasar 4.5:1 con blanco
-  const adjustedSecondary = ensureContrastWithWhite(safePrimary, 4.5);
+  const adjustedSecondary = lightenToContrast(safePrimary, 4.5);
   // tertiary: más oscuro que primary
   const { r: pr, g: pg, b: pb } = toRGB(adjustedPrimary);
   const tertiary = `#${Math.round(pr * 0.6).toString(16).padStart(2,'0')}${Math.round(pg * 0.6).toString(16).padStart(2,'0')}${Math.round(pb * 0.6).toString(16).padStart(2,'0')}`;

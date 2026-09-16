@@ -4,6 +4,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { MapPin, ExternalLink } from "lucide-react";
 import InternalLayout from "../layouts/internal";
 import { generatePalette } from "../utils/generatePalette";
+import { setCssVariables, resetCssVariables } from "../utils/setCssVariables";
 import { ButtonCard } from "../components/buttons.jsx";
 
 export default function Institucion() {
@@ -18,13 +19,14 @@ export default function Institucion() {
     const fromState = location.state?.colors;
     if (fromState) {
       setColors(fromState);
-      updateCssVariables(fromState);
+      setCssVariables(fromState);
     }
   }, [location.state, slug]);
 
   // 2) Datos institución
   useEffect(() => {
-    fetch(`http://localhost:4000/api/instituciones/${slug}`)
+    const ctrl = new AbortController();
+    fetch(`http://localhost:4000/api/instituciones/${slug}`, { signal: ctrl.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -37,13 +39,13 @@ export default function Institucion() {
           const base = "#860707"; // color fallback (organizaciones)
           const palette = generatePalette(base);
           setColors(palette);
-          updateCssVariables(palette);
+          setCssVariables(palette);
         }
       })
       .catch((e) => console.error(e));
   }, [slug, location.state]);
 
-  const updateCssVariables = (palette) => {
+  const setCssVariables = (palette) => {
     document.documentElement.style.setProperty("--primary", palette.primary);
     document.documentElement.style.setProperty("--secondary", palette.secondary);
     document.documentElement.style.setProperty("--tertiary", palette.tertiary);

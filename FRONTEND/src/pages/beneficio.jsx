@@ -4,6 +4,7 @@ import { useParams, useLocation } from "react-router-dom";
 import { MapPin, Download, ExternalLink, FileCheck, Maximize2, Minimize2 } from "lucide-react";
 
 import { generatePalette } from "../utils/generatePalette";
+import { setCssVariables, resetCssVariables } from "../utils/setCssVariables";
 import { formatTextAsList } from "../utils/textoalista.jsx";
 import InternalLayout from "../layouts/internal";
 import MapaBeneficio from "../components/mapaBeneficio.jsx";
@@ -26,25 +27,26 @@ export default function Beneficio() {
     const fromState = location.state?.colors;
     if (fromState) {
       setColors(fromState);
-      updateCssVariables(fromState);
+      setCssVariables(fromState);
     }
   }, [location.state, slug]);
 
   // 2. Carga de datos
   useEffect(() => {
-    fetch(`http://localhost:4000/api/beneficios/${slug}`)
+    const ctrl = new AbortController();
+    fetch(`http://localhost:4000/api/beneficios/${slug}`, { signal: ctrl.signal })
       .then((res) => res.json())
       .then((data) => {
         setBeneficio(data);
         if (!location.state?.colors && data.color_primary) {
           const palette = generatePalette(data.color_primary);
           setColors(palette);
-          updateCssVariables(palette);
+          setCssVariables(palette);
         }
       });
   }, [slug, location.state]);
 
-  const updateCssVariables = (palette) => {
+  const setCssVariables = (palette) => {
     document.documentElement.style.setProperty("--primary", palette.primary);
     document.documentElement.style.setProperty("--secondary", palette.secondary);
     document.documentElement.style.setProperty("--tertiary", palette.tertiary);

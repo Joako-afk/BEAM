@@ -119,3 +119,47 @@ export const eliminarCategoria = async (id) => {
   if (result.rowCount === 0) return null;
   return result.rows[0];
 };
+
+/**
+ * Búsqueda paginada de categorías (admin).
+ */
+export const buscarCategorias = async (search, page, limit) => {
+  const offset = (page - 1) * limit;
+  const term = `%${search}%`;
+  const where = search ? "WHERE nombre ILIKE $1" : "";
+  const params = search ? [term, limit, offset] : [limit, offset];
+
+  const countResult = await pool.query(
+    `SELECT COUNT(*)::int AS total FROM categoria ${where}`,
+    search ? [term] : []
+  );
+
+  const result = await pool.query(
+    `
+    SELECT id_categoria, nombre, descripcion, color_primary, slug, icon_name
+    FROM categoria
+    ${where}
+    ORDER BY id_categoria ASC
+    LIMIT $${search ? 2 : 1} OFFSET $${search ? 3 : 2}
+    `,
+    params
+  );
+
+  return {
+    data: result.rows,
+    total: countResult.rows[0].total,
+    page,
+    totalPages: Math.ceil(countResult.rows[0].total / limit),
+  };
+};
+
+/**
+ * Cuenta beneficios de una categoría (para desglose de cascada).
+ */
+export const contarBeneficiosPorCategoria = async (idCategoria) => {
+  const result = await pool.query(
+    "SELECT COUNT(*)::int AS total FROM beneficio WHERE id_categoria = $1",
+    [idCategoria]
+  );
+  return result.rows[0].total;
+};
