@@ -1,17 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Upload, X } from "lucide-react";
 
-const COLORES_PREDEFINIDOS = [
-  "#011991", "#669101", "#860707", "#860784",
-  "#0077B6", "#2D6A4F", "#9B2226", "#6A0572",
-  "#E63946", "#457B9D", "#2A9D8F", "#E9C46A",
-];
-
 const hexToRgb = (hex) => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
-  return `rgb(${r}, ${g}, ${b})`;
+  return { r, g, b };
+};
+
+const rgbToHex = (r, g, b) => {
+  const toHex = (n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
 export default function CategoriaForm({ data, onSubmit, onCancel }) {
@@ -24,6 +23,14 @@ export default function CategoriaForm({ data, onSubmit, onCancel }) {
   const [iconFile, setIconFile] = useState(null);
   const [iconPreview, setIconPreview] = useState(null);
   const fileInputRef = useRef(null);
+  const [rgbText, setRgbText] = useState("");
+
+  useEffect(() => {
+    if (form.color_primary && form.color_primary.length === 7) {
+      const { r, g, b } = hexToRgb(form.color_primary);
+      setRgbText(`${r}, ${g}, ${b}`);
+    }
+  }, [form.color_primary]);
 
   useEffect(() => {
     if (data) {
@@ -96,27 +103,62 @@ export default function CategoriaForm({ data, onSubmit, onCancel }) {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Color principal</label>
-        <div className="space-y-1 mb-3">
-          {COLORES_PREDEFINIDOS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setForm({ ...form, color_primary: c })}
-              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-colors ${form.color_primary === c ? "bg-blue-50 ring-2 ring-blue-500" : "hover:bg-gray-50"}`}
+        <div className="rounded-xl border border-gray-200 p-4 shadow-sm">
+          <input
+            type="color"
+            value={form.color_primary}
+            onChange={(e) => setForm({ ...form, color_primary: e.target.value })}
+            className="w-full h-20 rounded-lg border border-gray-300 cursor-pointer p-0 mb-4"
+          />
+          <div className="flex items-center gap-3 mb-3">
+            <label className="text-sm font-medium text-gray-500 w-10">HEX</label>
+            <input
+              type="text"
+              value={form.color_primary}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^#[0-9A-Fa-f]{0,6}$/.test(val)) {
+                  setForm({ ...form, color_primary: val });
+                }
+              }}
+              maxLength={7}
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="#000000"
+            />
+          </div>
+          <div className="flex items-center gap-3 mb-4">
+            <label className="text-sm font-medium text-gray-500 w-10">RGB</label>
+            <input
+              type="text"
+              value={rgbText}
+              onChange={(e) => {
+                const val = e.target.value;
+                setRgbText(val);
+                const match = val.match(/^\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*$/);
+                if (match) {
+                  const r = parseInt(match[1]);
+                  const g = parseInt(match[2]);
+                  const b = parseInt(match[3]);
+                  if (r <= 255 && g <= 255 && b <= 255) {
+                    setForm({ ...form, color_primary: rgbToHex(r, g, b) });
+                  }
+                }
+              }}
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="0, 0, 0"
+            />
+          </div>
+          <div className="rounded-lg overflow-hidden border border-gray-200">
+            <div
+              className="px-4 py-6 text-center"
+              style={{ backgroundColor: form.color_primary }}
             >
-              <span className="w-5 h-5 rounded border border-gray-200 flex-shrink-0" style={{ backgroundColor: c }} />
-              <span className="font-mono text-gray-600">{c}</span>
-              <span className="text-gray-400">,</span>
-              <span className="font-mono text-gray-400">{hexToRgb(c)}</span>
-            </button>
-          ))}
+              <p className="text-white font-bold text-sm uppercase">
+                {form.nombre || "Categoría de ejemplo"}
+              </p>
+            </div>
+          </div>
         </div>
-        <input
-          type="color"
-          value={form.color_primary}
-          onChange={(e) => setForm({ ...form, color_primary: e.target.value })}
-          className="w-full h-10 border border-gray-300 rounded-lg cursor-pointer"
-        />
       </div>
 
       <div>
